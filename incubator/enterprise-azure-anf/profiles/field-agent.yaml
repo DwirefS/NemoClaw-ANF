@@ -1,0 +1,69 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: incubator.nemoclaw.io/v1alpha1
+kind: AgentRoleProfile
+metadata:
+  name: field-agent
+  labels:
+    trust-tier: low
+    deployment-model: hybrid
+spec:
+  trustZone: low-trust
+  purpose: "User-facing enterprise assistant with access to sanitized knowledge and approved public research endpoints."
+  allowedDataClasses:
+    - public
+    - internal-sanitized
+    - derived-grounding-evidence
+  deniedDataClasses:
+    - pii-raw
+    - finance-sensitive
+    - intellectual-property-restricted
+  allowedOutboundDestinations:
+    - name: retrieval-api
+      type: private-service
+      host: retrieval-api.rag.svc.cluster.local
+      ports: [8080]
+    - name: guardrails
+      type: private-service
+      host: nemo-guardrails.guardrails.svc.cluster.local
+      ports: [8000]
+    - name: public-research-egress
+      type: policy-controlled-internet
+      hosts:
+        - "*.microsoft.com"
+        - "*.nvidia.com"
+        - "*.netapp.com"
+  retrievalScope:
+    mode: sanitized-only
+    collectionSelectors:
+      - corpus: enterprise-public
+      - corpus: enterprise-internal-sanitized
+    maxEvidenceChunks: 12
+    directDatabaseAccess: false
+  guardrails:
+    inputRails:
+      - jailbreak-detection
+      - pii-request-detection
+      - topic-boundary
+    outputRails:
+      - pii-masking
+      - grounding-required
+      - safe-completion
+  storageMounts:
+    - name: agent-memory
+      class: anf-premium-rwo
+      mountPath: /sandbox/state
+      access: read-write
+    - name: skills-cache
+      class: anf-standard-rox
+      mountPath: /sandbox/skills
+      access: read-only
+  auditRequirements:
+    - log prompt and response metadata
+    - log retrieval request identifiers
+    - log outbound internet destinations
+    - redact credential material from all logs
+  escalationBehavior:
+    onSensitiveRequest: "Route through A2A bridge to vault-agent only after guardrail approval."
+    onPolicyViolation: "Block response, emit audit event, and require operator review."

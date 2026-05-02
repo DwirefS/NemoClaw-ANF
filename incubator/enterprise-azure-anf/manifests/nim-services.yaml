@@ -1,0 +1,131 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMCache
+    metadata:
+      name: nemotron-cache
+      namespace: inference
+    spec:
+      source:
+        ngc:
+          modelPuller: nvcr.io/nim/nvidia/llm-nim:1.11.0
+          pullSecret: ngc-secret
+          authSecret: ngc-api-secret
+          model:
+            engine: tensorrt_llm
+            tensorParallelism: "1"
+      storage:
+        pvc:
+          create: true
+          storageClass: anf-ultra-rwx
+          size: "800Gi"
+          volumeAccessMode: ReadWriteMany
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMService
+    metadata:
+      name: nemotron-llm
+      namespace: inference
+    spec:
+      image:
+        repository: nvcr.io/nim/nvidia/llm-nim
+        tag: "1.11.0"
+        pullPolicy: IfNotPresent
+        pullSecrets:
+          - ngc-secret
+      authSecret: ngc-api-secret
+      storage:
+        nimCache:
+          name: nemotron-cache
+          profile: tensorrt_llm
+      env:
+        - name: NIM_MODEL_NAME
+          value: nvidia/llama-3.1-nemotron-70b-instruct
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      expose:
+        service:
+          type: ClusterIP
+          port: 8000
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMService
+    metadata:
+      name: nemo-embedder
+      namespace: inference
+    spec:
+      image:
+        repository: nvcr.io/nim/nvidia/nv-embedqa-e5-v5
+        tag: "1.0.0"
+        pullPolicy: IfNotPresent
+        pullSecrets:
+          - ngc-secret
+      authSecret: ngc-api-secret
+      storage:
+        nimCache:
+          name: nemotron-cache
+          profile: ""
+      env:
+        - name: NIM_MODEL_NAME
+          value: nvidia/nv-embedqa-e5-v5
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      expose:
+        service:
+          type: ClusterIP
+          port: 8000
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMService
+    metadata:
+      name: nemo-reranker
+      namespace: inference
+    spec:
+      image:
+        repository: nvcr.io/nim/nvidia/llama-nemotron-rerank-1b-v2
+        tag: "1.0.0"
+        pullPolicy: IfNotPresent
+        pullSecrets:
+          - ngc-secret
+      authSecret: ngc-api-secret
+      storage:
+        nimCache:
+          name: nemotron-cache
+          profile: ""
+      env:
+        - name: NIM_MODEL_NAME
+          value: nvidia/llama-nemotron-rerank-1b-v2
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      expose:
+        service:
+          type: ClusterIP
+          port: 8000
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMService
+    metadata:
+      name: nemo-parse
+      namespace: inference
+    spec:
+      image:
+        repository: nvcr.io/nim/nvidia/nemotron-parse
+        tag: "1.0.0"
+        pullPolicy: IfNotPresent
+        pullSecrets:
+          - ngc-secret
+      authSecret: ngc-api-secret
+      storage:
+        nimCache:
+          name: nemotron-cache
+          profile: ""
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      expose:
+        service:
+          type: ClusterIP
+          port: 8000

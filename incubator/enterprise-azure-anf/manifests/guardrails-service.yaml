@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: guardrails-config
+      namespace: guardrails
+    data:
+      rails.co: |
+        define flow enterprise_grounding
+          user ask
+          bot answer
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: nemo-guardrails
+      namespace: guardrails
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: nemo-guardrails
+      template:
+        metadata:
+          labels:
+            app: nemo-guardrails
+        spec:
+          containers:
+            - name: nemo-guardrails
+              image: nvcr.io/nim/nvidia/nemo-guardrails:latest
+              volumeMounts:
+                - name: guardrails-config
+                  mountPath: /app/config
+          volumes:
+            - name: guardrails-config
+              configMap:
+                name: guardrails-config
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: nemo-guardrails
+      namespace: guardrails
+    spec:
+      selector:
+        app: nemo-guardrails
+      ports:
+        - port: 8000
+          targetPort: 8000

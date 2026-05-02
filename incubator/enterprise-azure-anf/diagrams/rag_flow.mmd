@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant USER as 👤 User
+    participant NEMOCLAW as 🤖 NemoClaw Agent
+    participant OPENSHELL as 🔒 OpenShell<br/>(L7 Proxy)
+    participant GUARDRAILS as 🛡️ NeMo Guardrails NIM
+    participant EMBED_NIM as 📐 Embedding NIM
+    participant POSTGRES as 🗄️ PostgreSQL + pgvector
+    participant RERANK_NIM as 🔢 Reranker NIM
+    participant LLM_NIM as 🧠 Nemotron LLM NIM
+    participant ANF_AGENT as 🧠 ANF Agent Memory
+
+    USER->>NEMOCLAW: Send query via channel
+    NEMOCLAW->>OPENSHELL: Route query through sandbox
+    OPENSHELL->>GUARDRAILS: Input rail check<br/>(jailbreak, PII, topic)
+    GUARDRAILS-->>OPENSHELL: Sanitized query
+    OPENSHELL-->>NEMOCLAW: Cleared query
+    NEMOCLAW->>ANF_AGENT: Load conversation history
+    ANF_AGENT-->>NEMOCLAW: Recent context
+    NEMOCLAW->>EMBED_NIM: Embed sanitized query
+    EMBED_NIM-->>NEMOCLAW: Query vector
+    NEMOCLAW->>POSTGRES: Hybrid search<br/>(HNSW vector + BM25 FTS + RRF merge)
+    POSTGRES-->>NEMOCLAW: Top-N candidate chunks
+    NEMOCLAW->>RERANK_NIM: Rerank candidates vs. query
+    RERANK_NIM-->>NEMOCLAW: Reranked, top-K chunks
+    NEMOCLAW->>OPENSHELL: Construct prompt<br/>(query + context + persona)
+    OPENSHELL->>LLM_NIM: Forward prompt (credential injected)
+    LLM_NIM-->>OPENSHELL: Generated response
+    OPENSHELL->>GUARDRAILS: Output rail check<br/>(fact-check, PII, safety)
+    GUARDRAILS-->>OPENSHELL: Validated response
+    OPENSHELL-->>NEMOCLAW: Final response
+    NEMOCLAW->>ANF_AGENT: Update memory (interaction log)
+    NEMOCLAW-->>USER: Deliver grounded response

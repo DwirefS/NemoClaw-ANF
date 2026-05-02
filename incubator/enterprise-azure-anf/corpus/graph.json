@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "nodes": [
+    {
+      "id": "doc-whitepaper-md",
+      "type": "document",
+      "label": "Sovereign Enterprise AI whitepaper",
+      "path": "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Sovereign Enterprise AI: A Technical Whitepaper on NVIDIA NemoClaw, Nemotron RAG, and Azure NetApp Files.md"
+    },
+    {
+      "id": "doc-definitive-md",
+      "type": "document",
+      "label": "Definitive architecture report",
+      "path": "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Definitive Enterprise AI Architecture: NVIDIA NemoClaw + Nemotron RAG on Azure with Azure NetApp Files.md"
+    },
+    {
+      "id": "doc-draft-docx",
+      "type": "document",
+      "label": "Enterprise AI Architecture Draft",
+      "path": "/Users/dwirefs/Downloads/Enterprise AI Architecture Draft.docx"
+    },
+    {
+      "id": "doc-research-synthesis",
+      "type": "document",
+      "label": "Research synthesis",
+      "path": "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/research_synthesis.txt"
+    },
+    {
+      "id": "doc-multiagent-security",
+      "type": "document",
+      "label": "Research diagram for multi-agent security",
+      "path": "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/multiagent_security.mmd"
+    },
+    {
+      "id": "component-aks-rag-plane",
+      "type": "component",
+      "label": "AKS RAG and data plane"
+    },
+    {
+      "id": "component-worker-tier",
+      "type": "component",
+      "label": "Isolated NemoClaw/OpenShell worker tier"
+    },
+    {
+      "id": "component-anf",
+      "type": "component",
+      "label": "Azure NetApp Files"
+    },
+    {
+      "id": "component-pgvector",
+      "type": "component",
+      "label": "PostgreSQL with pgvector"
+    },
+    {
+      "id": "component-retrieval-api",
+      "type": "component",
+      "label": "Internal retrieval API"
+    },
+    {
+      "id": "concept-hybrid-baseline",
+      "type": "concept",
+      "label": "Hybrid baseline topology"
+    },
+    {
+      "id": "concept-full-aks-future",
+      "type": "concept",
+      "label": "Full AKS-hosted future state"
+    },
+    {
+      "id": "concept-field-vault",
+      "type": "concept",
+      "label": "Field-agent and vault-agent role separation"
+    },
+    {
+      "id": "concept-snapshot-memory",
+      "type": "concept",
+      "label": "Snapshot-as-memory and clone-driven recovery"
+    },
+    {
+      "id": "claim-pgvector-target",
+      "type": "claim",
+      "label": "pgvector is the chosen retrieval target"
+    },
+    {
+      "id": "claim-stock-vdb-path",
+      "type": "claim",
+      "label": "Stock NVIDIA RAG paths favor other vector stores"
+    },
+    {
+      "id": "claim-full-aks-runtime",
+      "type": "claim",
+      "label": "NemoClaw/OpenShell can be treated as AKS-native now"
+    },
+    {
+      "id": "claim-hybrid-runtime",
+      "type": "claim",
+      "label": "A hybrid baseline is safer than a full AKS runtime today"
+    },
+    {
+      "id": "claim-aks-native-secrets",
+      "type": "claim",
+      "label": "AKS-native Key Vault secret flows are the assumed runtime model"
+    },
+    {
+      "id": "claim-gateway-managed-secrets",
+      "type": "claim",
+      "label": "Gateway-managed credentials remain the current NemoClaw/OpenShell pattern"
+    },
+    {
+      "id": "claim-anf-agent-memory",
+      "type": "claim",
+      "label": "Agent memory should persist on ANF volumes"
+    },
+    {
+      "id": "claim-current-agent-state",
+      "type": "claim",
+      "label": "Current agent state behavior does not map directly to ANF-backed memory"
+    },
+    {
+      "id": "risk-product-maturity",
+      "type": "risk",
+      "label": "NemoClaw/OpenShell maturity risk"
+    },
+    {
+      "id": "risk-custom-pgvector",
+      "type": "risk",
+      "label": "Custom pgvector integration risk"
+    },
+    {
+      "id": "risk-acl-retrieval",
+      "type": "risk",
+      "label": "ACL-aware retrieval gap"
+    },
+    {
+      "id": "risk-ops-complexity",
+      "type": "risk",
+      "label": "Operational complexity and platform cost"
+    },
+    {
+      "id": "decision-incubator-first",
+      "type": "decision",
+      "label": "ADR-001 incubator-first repo surface"
+    },
+    {
+      "id": "decision-hybrid-baseline",
+      "type": "decision",
+      "label": "ADR-002 hybrid baseline"
+    },
+    {
+      "id": "decision-pgvector",
+      "type": "decision",
+      "label": "ADR-003 pgvector target"
+    },
+    {
+      "id": "decision-retrieval-api",
+      "type": "decision",
+      "label": "ADR-004 retrieval API boundary"
+    },
+    {
+      "id": "decision-field-vault",
+      "type": "decision",
+      "label": "ADR-005 field-vault role separation"
+    },
+    {
+      "id": "decision-mermaid-canonical",
+      "type": "decision",
+      "label": "ADR-006 Mermaid source of truth"
+    }
+  ],
+  "edges": [
+    {
+      "from": "doc-whitepaper-md",
+      "to": "component-anf",
+      "type": "supports"
+    },
+    {
+      "from": "doc-whitepaper-md",
+      "to": "component-pgvector",
+      "type": "supports"
+    },
+    {
+      "from": "doc-whitepaper-md",
+      "to": "concept-field-vault",
+      "type": "supports"
+    },
+    {
+      "from": "doc-definitive-md",
+      "to": "concept-snapshot-memory",
+      "type": "supports"
+    },
+    {
+      "from": "doc-draft-docx",
+      "to": "concept-hybrid-baseline",
+      "type": "supports"
+    },
+    {
+      "from": "doc-research-synthesis",
+      "to": "claim-gateway-managed-secrets",
+      "type": "supports"
+    },
+    {
+      "from": "doc-multiagent-security",
+      "to": "concept-field-vault",
+      "type": "supports"
+    },
+    {
+      "from": "component-aks-rag-plane",
+      "to": "component-retrieval-api",
+      "type": "depends_on"
+    },
+    {
+      "from": "component-worker-tier",
+      "to": "component-retrieval-api",
+      "type": "depends_on"
+    },
+    {
+      "from": "concept-hybrid-baseline",
+      "to": "component-aks-rag-plane",
+      "type": "depends_on"
+    },
+    {
+      "from": "concept-hybrid-baseline",
+      "to": "component-worker-tier",
+      "type": "depends_on"
+    },
+    {
+      "from": "claim-pgvector-target",
+      "to": "claim-stock-vdb-path",
+      "type": "contradicts"
+    },
+    {
+      "from": "claim-full-aks-runtime",
+      "to": "claim-hybrid-runtime",
+      "type": "contradicts"
+    },
+    {
+      "from": "claim-aks-native-secrets",
+      "to": "claim-gateway-managed-secrets",
+      "type": "contradicts"
+    },
+    {
+      "from": "claim-anf-agent-memory",
+      "to": "claim-current-agent-state",
+      "type": "contradicts"
+    },
+    {
+      "from": "claim-pgvector-target",
+      "to": "risk-custom-pgvector",
+      "type": "supports"
+    },
+    {
+      "from": "claim-hybrid-runtime",
+      "to": "risk-product-maturity",
+      "type": "supports"
+    },
+    {
+      "from": "concept-field-vault",
+      "to": "risk-acl-retrieval",
+      "type": "depends_on"
+    },
+    {
+      "from": "component-anf",
+      "to": "risk-ops-complexity",
+      "type": "supports"
+    },
+    {
+      "from": "decision-incubator-first",
+      "to": "doc-whitepaper-md",
+      "type": "supports"
+    },
+    {
+      "from": "decision-incubator-first",
+      "to": "doc-draft-docx",
+      "type": "supports"
+    },
+    {
+      "from": "decision-hybrid-baseline",
+      "to": "concept-hybrid-baseline",
+      "type": "supports"
+    },
+    {
+      "from": "decision-pgvector",
+      "to": "claim-pgvector-target",
+      "type": "supports"
+    },
+    {
+      "from": "decision-retrieval-api",
+      "to": "component-retrieval-api",
+      "type": "supports"
+    },
+    {
+      "from": "decision-field-vault",
+      "to": "concept-field-vault",
+      "type": "supports"
+    },
+    {
+      "from": "decision-mermaid-canonical",
+      "to": "doc-multiagent-security",
+      "type": "supports"
+    },
+    {
+      "from": "decision-incubator-first",
+      "to": ".agents/skills",
+      "type": "maps_to_repo"
+    },
+    {
+      "from": "decision-hybrid-baseline",
+      "to": "nemoclaw-blueprint",
+      "type": "maps_to_repo"
+    },
+    {
+      "from": "decision-retrieval-api",
+      "to": "incubator/enterprise-azure-anf/manifests/retrieval-api.yaml",
+      "type": "maps_to_repo"
+    }
+  ]
+}

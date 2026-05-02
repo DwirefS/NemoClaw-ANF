@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nemoclaw-worker-tier-bootstrap
+  namespace: worker-tier
+data:
+  cloud-init.yaml: |
+    #cloud-config
+    package_update: true
+    packages:
+      - docker.io
+      - jq
+    write_files:
+      - path: /etc/nemoclaw/enterprise.env
+        permissions: "0640"
+        content: |
+          NEMOCLAW_RETRIEVAL_API=http://retrieval-api.rag.svc.cluster.local:8080
+          NEMOCLAW_GUARDRAILS_URL=http://nemo-guardrails.guardrails.svc.cluster.local:8000
+          NEMOCLAW_POLICY_PROFILE=enterprise-hybrid
+      - path: /etc/systemd/system/nemoclaw-enterprise.service
+        permissions: "0644"
+        content: |
+          [Unit]
+          Description=NemoClaw Enterprise Worker
+          After=docker.service network-online.target
+
+          [Service]
+          EnvironmentFile=/etc/nemoclaw/enterprise.env
+          ExecStart=/usr/local/bin/nemoclaw launch --profile enterprise-hybrid
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+    runcmd:
+      - systemctl daemon-reload
+      - systemctl enable nemoclaw-enterprise.service

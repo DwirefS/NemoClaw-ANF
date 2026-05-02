@@ -1,0 +1,44 @@
+graph TB
+    subgraph EXTERNAL["External Zone"]
+        USER["👤 External User"]
+        EXTAPI["🌐 Public APIs / Web"]
+    end
+
+    subgraph LOW_TRUST["Low-Trust Zone (AKS Namespace: field-agents)"]
+        FIELD_AGENT["🤖 Field Agent\n(NemoClaw + OpenShell)"]
+        ANF_PUBLIC["📁 ANF: Public/Sanitized Data\n(Standard Tier)"]
+        FIELD_AGENT --> ANF_PUBLIC
+    end
+
+    subgraph BRIDGE["Secure Bridge (AKS Namespace: guardrails)"]
+        A2A_PROXY["🔒 A2A Protocol Gateway\n+ NeMo Guardrails Proxy\n(PII Masking + Policy Check)"]
+    end
+
+    subgraph HIGH_TRUST["High-Trust Zone (AKS Namespace: vault-agents)"]
+        VAULT_AGENT["🔐 Vault Agent\n(NemoClaw + OpenShell)"]
+        ANF_SENSITIVE["🔒 ANF: Sensitive Data\n(Ultra Tier, Encrypted)"]
+        PG_SENSITIVE["🗄️ PostgreSQL: Sensitive Vectors\n(ANF Ultra)"]
+        VAULT_AGENT --> ANF_SENSITIVE
+        VAULT_AGENT --> PG_SENSITIVE
+    end
+
+    subgraph INFERENCE["Inference Zone (GPU Nodes)"]
+        LLM_NIM["🧠 Nemotron LLM NIM"]
+        EMBED_NIM["📐 Embedding NIM"]
+    end
+
+    USER -->|HTTPS| FIELD_AGENT
+    FIELD_AGENT -.->|External Research| EXTAPI
+    FIELD_AGENT -->|"Request: needs sensitive insight"| A2A_PROXY
+    A2A_PROXY -->|"Validated, policy-checked request"| VAULT_AGENT
+    VAULT_AGENT -->|"Raw response (may contain PII)"| A2A_PROXY
+    A2A_PROXY -->|"Scrubbed response (PII masked)"| FIELD_AGENT
+    FIELD_AGENT -->|"Grounded, safe response"| USER
+
+    VAULT_AGENT <-->|Inference| LLM_NIM
+    VAULT_AGENT <-->|Embedding| EMBED_NIM
+    FIELD_AGENT <-->|Inference| LLM_NIM
+
+    style HIGH_TRUST fill:#ffe0e0,stroke:#cc0000
+    style LOW_TRUST fill:#e0f0ff,stroke:#0066cc
+    style BRIDGE fill:#fff0cc,stroke:#cc8800

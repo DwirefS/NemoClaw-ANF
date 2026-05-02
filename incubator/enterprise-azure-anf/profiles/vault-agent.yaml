@@ -1,0 +1,71 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: incubator.nemoclaw.io/v1alpha1
+kind: AgentRoleProfile
+metadata:
+  name: vault-agent
+  labels:
+    trust-tier: high
+    deployment-model: hybrid
+spec:
+  trustZone: high-trust
+  purpose: "Sensitive enterprise reasoning agent with access to restricted corpora and approved internal systems."
+  allowedDataClasses:
+    - public
+    - internal
+    - pii-controlled
+    - finance-sensitive
+    - intellectual-property-restricted
+  deniedDataClasses:
+    - unrestricted-public-internet-write
+  allowedOutboundDestinations:
+    - name: retrieval-api
+      type: private-service
+      host: retrieval-api.rag.svc.cluster.local
+      ports: [8080]
+    - name: nemotron-llm
+      type: private-service
+      host: nemotron-llm.inference.svc.cluster.local
+      ports: [8000]
+    - name: nemo-embedder
+      type: private-service
+      host: nemo-embedder.inference.svc.cluster.local
+      ports: [8000]
+    - name: nemo-reranker
+      type: private-service
+      host: nemo-reranker.inference.svc.cluster.local
+      ports: [8000]
+  retrievalScope:
+    mode: restricted-enterprise
+    collectionSelectors:
+      - corpus: enterprise-sensitive
+      - corpus: enterprise-regulated
+    maxEvidenceChunks: 20
+    directDatabaseAccess: false
+  guardrails:
+    inputRails:
+      - jailbreak-detection
+      - privileged-action-detection
+      - sensitive-topic-routing
+    outputRails:
+      - pii-review
+      - source-attribution-required
+      - bridge-scrubbing-required
+  storageMounts:
+    - name: agent-memory
+      class: anf-premium-rwo
+      mountPath: /sandbox/state
+      access: read-write
+    - name: policy-bundles
+      class: anf-standard-rox
+      mountPath: /sandbox/policies
+      access: read-only
+  auditRequirements:
+    - log prompt and response metadata
+    - log retrieval collection and access-policy identifiers
+    - log bridge calls to and from field agents
+    - record operator override events
+  escalationBehavior:
+    onSensitiveRequest: "Respond directly only inside the high-trust zone, or return through the bridge after scrub and policy evaluation."
+    onPolicyViolation: "Quarantine run context and require operator review before retry."

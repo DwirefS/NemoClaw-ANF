@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: incubator.nemoclaw.io/v1alpha1
+kind: SharedPolicyContract
+metadata:
+  name: field-vault-bridge
+spec:
+  bridge:
+    protocol: a2a
+    authentication:
+      mode: mutual-tls
+      callerIdentityRequired: true
+    allowedCallers:
+      - field-agent
+    allowedTargets:
+      - vault-agent
+  requestPolicy:
+    requiredAttributes:
+      - request-id
+      - caller-role
+      - user-identity
+      - classification-intent
+    deniedActions:
+      - arbitrary-tool-execution
+      - raw-filesystem-browse
+      - direct-secret-request
+  responsePolicy:
+    masking:
+      required: true
+      classifiers:
+        - pii
+        - secrets
+        - finance
+    grounding:
+      includeEvidenceIds: true
+      includeClassification: true
+    delivery:
+      rawVaultResponseMayLeaveZone: false
+  retrievalPolicy:
+    directPostgresAccessFromAgents: false
+    directANFDocumentShareAccessFromAgents: false
+    retrievalApiRequired: true
+  audit:
+    emitEvents:
+      - bridge-request
+      - bridge-response
+      - guardrail-block
+      - operator-override

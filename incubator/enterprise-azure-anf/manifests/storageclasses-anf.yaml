@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: anf-standard-rwx
+    provisioner: csi.trident.netapp.io
+    allowVolumeExpansion: true
+    mountOptions:
+      - vers=4.1
+      - hard
+      - nconnect=8
+    parameters:
+      backendType: azure-netapp-files
+      selector: "serviceLevel=Standard"
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: anf-premium-rwo
+    provisioner: csi.trident.netapp.io
+    allowVolumeExpansion: true
+    mountOptions:
+      - vers=4.1
+      - hard
+      - nconnect=8
+    parameters:
+      backendType: azure-netapp-files
+      selector: "serviceLevel=Premium"
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: anf-ultra-rwx
+    provisioner: csi.trident.netapp.io
+    allowVolumeExpansion: true
+    mountOptions:
+      - vers=4.1
+      - hard
+      - nconnect=8
+    parameters:
+      backendType: azure-netapp-files
+      selector: "serviceLevel=Ultra"
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: anf-postgres-rwo
+    provisioner: csi.trident.netapp.io
+    allowVolumeExpansion: true
+    mountOptions:
+      - vers=4.1
+      - hard
+      - nconnect=8
+      - rsize=65536
+      - wsize=65536
+    parameters:
+      backendType: azure-netapp-files
+      selector: "serviceLevel=Ultra"
