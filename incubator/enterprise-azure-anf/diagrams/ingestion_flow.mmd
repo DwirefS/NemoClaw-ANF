@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant ANF_DOCS as 📁 ANF Document<br/>Repository
+    participant TRIGGER as ⚡ Ingestion Trigger<br/>(CronJob / Event Grid)
+    participant NVINGEST as ⚙️ NV-Ingest Pipeline
+    participant OCR_NIM as 📄 OCR / Parse NIM<br/>(PaddleOCR / Nemotron Parse)
+    participant EMBED_NIM as 📐 Embedding NIM<br/>(NV-Embed-QA)
+    participant POSTGRES as 🗄️ PostgreSQL + pgvector<br/>(ANF Ultra)
+
+    ANF_DOCS->>TRIGGER: New document detected
+    TRIGGER->>NVINGEST: Trigger ingestion job
+    NVINGEST->>ANF_DOCS: Read raw document (PDF/DOCX/Image)
+    NVINGEST->>OCR_NIM: Send document for extraction
+    OCR_NIM-->>NVINGEST: Return structured text + tables + metadata
+    NVINGEST->>NVINGEST: Apply chunking strategy<br/>(512 tokens, 50-token overlap)
+    loop For each chunk
+        NVINGEST->>EMBED_NIM: Send text chunk for embedding
+        EMBED_NIM-->>NVINGEST: Return dense vector (e.g., 3072 dims)
+    end
+    NVINGEST->>POSTGRES: INSERT INTO document_chunks<br/>(content, embedding, metadata, tsvector)
+    POSTGRES->>POSTGRES: Update HNSW index (vector)<br/>Update GIN index (tsvector)
+    POSTGRES-->>NVINGEST: Confirm insertion
+    NVINGEST-->>TRIGGER: Job complete

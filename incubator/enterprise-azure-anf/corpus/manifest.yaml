@@ -1,0 +1,315 @@
+schema_version: 1
+source_bundle:
+  name: "Enterprise Azure ANF research bundle"
+  captured_from:
+    - "/Users/dwirefs/Downloads/Enterprise AI Architecture Draft.docx"
+    - "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2"
+records:
+  - id: "source-architecture-draft-docx"
+    path: "/Users/dwirefs/Downloads/Enterprise AI Architecture Draft.docx"
+    kind: "docx"
+    source_type: "reality-check"
+    canonical_rank: 1
+    derived_from: []
+    supersedes: []
+    paired_render: null
+    topics: ["current-state", "hybrid-baseline", "runtime-maturity", "aks-boundary"]
+    status: "canonical-current-state"
+    notes: "Most candid source for current runtime limitations and the recommended hybrid deployment baseline."
+  - id: "source-wide-research-json"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/nemoclaw_wide_research.json"
+    kind: "json"
+    source_type: "research-feed"
+    canonical_rank: 2
+    derived_from: []
+    supersedes: []
+    paired_render: null
+    topics: ["nemoclaw", "openshell", "nim", "anf", "azure", "pgvector"]
+    status: "supporting"
+    notes: "Broad machine-readable research feed covering the stack and adjacent enterprise topics."
+  - id: "source-research-notes-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/research_notes.md"
+    kind: "md"
+    source_type: "research-feed"
+    canonical_rank: 2
+    derived_from: ["source-wide-research-json"]
+    supersedes: []
+    paired_render: null
+    topics: ["nemoclaw", "openshell", "guardrails", "memory", "skills"]
+    status: "supporting"
+    notes: "Readable synthesis of the wide research results, especially useful for NemoClaw/OpenShell architecture."
+  - id: "source-all-summaries-txt"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/all_summaries.txt"
+    kind: "txt"
+    source_type: "research-feed"
+    canonical_rank: 3
+    derived_from: ["source-wide-research-json"]
+    supersedes: []
+    paired_render: null
+    topics: ["research-aggregate", "topic-summaries"]
+    status: "supporting"
+    notes: "Aggregated summary dump from the wide research stream."
+  - id: "source-presentation-base-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Presentation Script: NVIDIA NemoClaw + Nemotron RAG on Azure with Azure NetApp Files.md"
+    kind: "md"
+    source_type: "presentation-derivative"
+    canonical_rank: 3
+    derived_from: ["source-architecture-base-md"]
+    supersedes: []
+    paired_render: null
+    topics: ["presentation", "base-architecture"]
+    status: "derived"
+    notes: "Base architecture presentation script."
+  - id: "source-report-base-pdf"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/NemoClaw_Enterprise_AI_Report.pdf"
+    kind: "pdf"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["source-architecture-base-md"]
+    supersedes: []
+    paired_render: "source-architecture-base-md"
+    topics: ["base-report", "rendered-companion"]
+    status: "rendered"
+    notes: "PDF rendering of the base technical report."
+  - id: "source-architecture-base-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Enterprise AI Architecture: NVIDIA NemoClaw + Nemotron RAG on Azure with Azure NetApp Files.md"
+    kind: "md"
+    source_type: "primary-architecture"
+    canonical_rank: 3
+    derived_from: []
+    supersedes: []
+    paired_render: "source-report-base-pdf"
+    topics: ["architecture", "anf", "aks", "nims", "pgvector", "nemoclaw"]
+    status: "superseded"
+    notes: "First complete architecture report. Superseded by later definitive and whitepaper sources."
+  - id: "source-advanced-research-json"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/advanced_nemoclaw_research.json"
+    kind: "json"
+    source_type: "research-feed"
+    canonical_rank: 2
+    derived_from: []
+    supersedes: []
+    paired_render: null
+    topics: ["multi-agent", "snapshots", "nimcache", "security", "dr"]
+    status: "supporting"
+    notes: "Machine-readable advanced research feed for high-trust isolation and ANF operational patterns."
+  - id: "source-report-enriched-pdf"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/NemoClaw_Enterprise_AI_Report_Enriched.pdf"
+    kind: "pdf"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["source-architecture-enriched-md"]
+    supersedes: []
+    paired_render: "source-architecture-enriched-md"
+    topics: ["enriched-report", "rendered-companion"]
+    status: "rendered"
+    notes: "PDF rendering of the enriched architecture report."
+  - id: "source-presentation-enriched-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Enriched Presentation Script: Advanced Sovereign AI with NVIDIA NemoClaw & Azure NetApp Files.md"
+    kind: "md"
+    source_type: "presentation-derivative"
+    canonical_rank: 3
+    derived_from: ["source-architecture-enriched-md"]
+    supersedes: []
+    paired_render: null
+    topics: ["presentation", "field-vault", "snapshot-memory", "nimcache"]
+    status: "derived"
+    notes: "Presentation-oriented version of the enriched report."
+  - id: "source-architecture-enriched-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Enriched Enterprise AI Architecture: NVIDIA NemoClaw + Nemotron RAG on Azure with Azure NetApp Files.md"
+    kind: "md"
+    source_type: "primary-architecture"
+    canonical_rank: 2
+    derived_from: ["source-architecture-base-md"]
+    supersedes: ["source-architecture-base-md"]
+    paired_render: "source-report-enriched-pdf"
+    topics: ["field-vault", "snapshot-memory", "nimcache", "dr"]
+    status: "superseded"
+    notes: "Advanced architecture extension focused on security segmentation and state management."
+  - id: "source-research-synthesis-txt"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/research_synthesis.txt"
+    kind: "txt"
+    source_type: "primary-architecture"
+    canonical_rank: 1
+    derived_from: ["source-wide-research-json", "source-advanced-research-json", "source-research-notes-md", "source-all-summaries-txt"]
+    supersedes: []
+    paired_render: null
+    topics: ["source-synthesis", "repo-reality", "technical-findings"]
+    status: "canonical-supporting"
+    notes: "Best bridge between raw research claims and architecture decisions."
+  - id: "source-report-definitive-pdf"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Definitive_NemoClaw_Enterprise_AI_Report.pdf"
+    kind: "pdf"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["source-architecture-definitive-md"]
+    supersedes: []
+    paired_render: "source-architecture-definitive-md"
+    topics: ["definitive-report", "rendered-companion"]
+    status: "rendered"
+    notes: "PDF rendering of the definitive architecture report."
+  - id: "source-architecture-definitive-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Definitive Enterprise AI Architecture: NVIDIA NemoClaw + Nemotron RAG on Azure with Azure NetApp Files.md"
+    kind: "md"
+    source_type: "primary-architecture"
+    canonical_rank: 1
+    derived_from: ["source-architecture-base-md", "source-architecture-enriched-md"]
+    supersedes: ["source-architecture-base-md", "source-architecture-enriched-md"]
+    paired_render: "source-report-definitive-pdf"
+    topics: ["definitive-architecture", "validation", "field-vault", "pgvector", "anf"]
+    status: "canonical"
+    notes: "Concise architecture source and the clearest precursor to the long whitepaper."
+  - id: "source-whitepaper-part2-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/whitepaper_part2.md"
+    kind: "md"
+    source_type: "supporting-fragment"
+    canonical_rank: 2
+    derived_from: ["source-whitepaper-md"]
+    supersedes: []
+    paired_render: null
+    topics: ["whitepaper-fragment", "deployment", "security", "operations"]
+    status: "supporting"
+    notes: "Middle whitepaper fragment retained for chunk-friendly review."
+  - id: "source-whitepaper-part3-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/whitepaper_part3.md"
+    kind: "md"
+    source_type: "supporting-fragment"
+    canonical_rank: 2
+    derived_from: ["source-whitepaper-md"]
+    supersedes: []
+    paired_render: null
+    topics: ["whitepaper-fragment", "use-cases", "roadmap", "conclusion"]
+    status: "supporting"
+    notes: "Final whitepaper fragment retained for chunk-friendly review."
+  - id: "diagram-arch-overview-mmd"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/arch_overview.mmd"
+    kind: "mmd"
+    source_type: "diagram-source"
+    canonical_rank: 2
+    derived_from: []
+    supersedes: []
+    paired_render: "render-arch-overview-png"
+    topics: ["diagram", "architecture-overview", "aks", "anf"]
+    status: "canonical-diagram"
+    notes: "Imported into incubator diagrams as Mermaid source. Shows research-time AKS-hosted agent placement."
+  - id: "diagram-ingestion-flow-mmd"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/ingestion_flow.mmd"
+    kind: "mmd"
+    source_type: "diagram-source"
+    canonical_rank: 2
+    derived_from: []
+    supersedes: []
+    paired_render: "render-ingestion-flow-png"
+    topics: ["diagram", "ingestion", "ocr", "embedding", "pgvector"]
+    status: "canonical-diagram"
+    notes: "Imported into incubator diagrams as Mermaid source."
+  - id: "diagram-rag-flow-mmd"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/rag_flow.mmd"
+    kind: "mmd"
+    source_type: "diagram-source"
+    canonical_rank: 2
+    derived_from: []
+    supersedes: []
+    paired_render: "render-rag-flow-png"
+    topics: ["diagram", "rag", "guardrails", "rerank", "memory"]
+    status: "canonical-diagram"
+    notes: "Imported into incubator diagrams as Mermaid source."
+  - id: "diagram-multiagent-security-mmd"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/multiagent_security.mmd"
+    kind: "mmd"
+    source_type: "diagram-source"
+    canonical_rank: 2
+    derived_from: []
+    supersedes: []
+    paired_render: "render-multiagent-security-png"
+    topics: ["diagram", "field-vault", "security", "multi-agent"]
+    status: "canonical-diagram"
+    notes: "Imported into incubator diagrams as Mermaid source."
+  - id: "diagram-anf-roles-mmd"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/anf_roles.mmd"
+    kind: "mmd"
+    source_type: "diagram-source"
+    canonical_rank: 2
+    derived_from: []
+    supersedes: []
+    paired_render: "render-anf-roles-png"
+    topics: ["diagram", "anf", "storage", "snapshots", "snapmirror"]
+    status: "canonical-diagram"
+    notes: "Imported into incubator diagrams as Mermaid source."
+  - id: "source-whitepaper-final-pdf"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/NemoClaw_ANF_Whitepaper_FINAL.pdf"
+    kind: "pdf"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["source-whitepaper-md"]
+    supersedes: []
+    paired_render: "source-whitepaper-md"
+    topics: ["whitepaper", "rendered-companion"]
+    status: "rendered"
+    notes: "PDF rendering of the long whitepaper."
+  - id: "source-whitepaper-md"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/Sovereign Enterprise AI: A Technical Whitepaper on NVIDIA NemoClaw, Nemotron RAG, and Azure NetApp Files.md"
+    kind: "md"
+    source_type: "primary-architecture"
+    canonical_rank: 1
+    derived_from: ["source-architecture-definitive-md", "source-architecture-enriched-md", "source-research-synthesis-txt"]
+    supersedes: ["source-architecture-definitive-md"]
+    paired_render: "source-whitepaper-final-pdf"
+    topics: ["whitepaper", "sovereign-ai", "anf", "aks", "nemoclaw", "nims", "pgvector"]
+    status: "canonical"
+    notes: "Canonical long-form target-state architecture source for this incubator."
+  - id: "render-anf-roles-png"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/anf_roles.png"
+    kind: "png"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["diagram-anf-roles-mmd"]
+    supersedes: []
+    paired_render: "diagram-anf-roles-mmd"
+    topics: ["diagram-render", "anf"]
+    status: "rendered"
+    notes: "Rendered image companion to the Mermaid source."
+  - id: "render-multiagent-security-png"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/multiagent_security.png"
+    kind: "png"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["diagram-multiagent-security-mmd"]
+    supersedes: []
+    paired_render: "diagram-multiagent-security-mmd"
+    topics: ["diagram-render", "field-vault"]
+    status: "rendered"
+    notes: "Rendered image companion to the Mermaid source."
+  - id: "render-rag-flow-png"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/rag_flow.png"
+    kind: "png"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["diagram-rag-flow-mmd"]
+    supersedes: []
+    paired_render: "diagram-rag-flow-mmd"
+    topics: ["diagram-render", "rag-flow"]
+    status: "rendered"
+    notes: "Rendered image companion to the Mermaid source."
+  - id: "render-ingestion-flow-png"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/ingestion_flow.png"
+    kind: "png"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["diagram-ingestion-flow-mmd"]
+    supersedes: []
+    paired_render: "diagram-ingestion-flow-mmd"
+    topics: ["diagram-render", "ingestion-flow"]
+    status: "rendered"
+    notes: "Rendered image companion to the Mermaid source."
+  - id: "render-arch-overview-png"
+    path: "/Users/dwirefs/Downloads/Extending Nvidia RAG Blueprint on Azure with NetApp Files 2/arch_overview.png"
+    kind: "png"
+    source_type: "rendered-companion"
+    canonical_rank: 4
+    derived_from: ["diagram-arch-overview-mmd"]
+    supersedes: []
+    paired_render: "diagram-arch-overview-mmd"
+    topics: ["diagram-render", "architecture-overview"]
+    status: "rendered"
+    notes: "Rendered image companion to the Mermaid source."

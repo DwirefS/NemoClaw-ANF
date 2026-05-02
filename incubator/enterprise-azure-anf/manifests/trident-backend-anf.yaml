@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: anf-backend-enterprise
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: azure-netapp-files
+  subscriptionID: "<azure-subscription-id>"
+  tenantID: "<azure-tenant-id>"
+  clientID: "<managed-identity-client-id>"
+  serviceLevel: Premium
+  location: eastus2
+  resourceGroups:
+    - rg-ai-platform
+  netappAccounts:
+    - anf-enterprise
+  capacityPools:
+    - anf-enterprise-premium
+    - anf-enterprise-ultra
+  virtualNetwork: vnet-ai-private
+  subnet: anf-delegated-subnet
+  nfsMountOptions: "vers=4.1,nconnect=8"

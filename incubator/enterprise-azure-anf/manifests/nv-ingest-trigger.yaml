@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: batch/v1
+    kind: CronJob
+    metadata:
+      name: nv-ingest-reconcile
+      namespace: ingestion
+    spec:
+      schedule: "*/10 * * * *"
+      jobTemplate:
+        spec:
+          template:
+            spec:
+              restartPolicy: OnFailure
+              containers:
+                # Packaged worker source provenance:
+                # git+https://github.com/NVIDIA/NeMo-Retriever@release/26.03
+                # from nemo_retriever import create_ingestor
+                # .files(documents)
+                # .extract(
+                # .embed()
+                - name: nemo-retriever-ingest
+                  image: ghcr.io/dwirefs/nemoclaw-anf/nemo-retriever-ingest:dev
+                  env:
+                    - name: INGEST_SOURCE_DIR
+                      value: /mnt/documents
+                    - name: POSTGRES_DSN
+                      valueFrom:
+                        secretKeyRef:
+                          name: ingestion-secrets
+                          key: postgres-dsn
+                    - name: EMBEDDING_ENDPOINT
+                      value: http://nemo-embedder.inference.svc.cluster.local:8000
+                    - name: PARSE_ENDPOINT
+                      value: http://nemo-parse.inference.svc.cluster.local:8000
+                    - name: DEFAULT_COLLECTION
+                      value: enterprise-public
+                    - name: DEFAULT_CLASSIFICATION
+                      value: internal-sanitized
+                  volumeMounts:
+                    - name: documents
+                      mountPath: /mnt/documents
+              volumes:
+                - name: documents
+                  persistentVolumeClaim:
+                    claimName: enterprise-document-repository

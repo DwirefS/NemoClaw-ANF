@@ -1,0 +1,25 @@
+graph LR
+    subgraph ANF["Azure NetApp Files — Unified Storage Substrate"]
+        V1["📁 Volume 1: Document Repository\nTier: Standard/Premium\nProtocol: NFSv4.1\nAccess: RWX\nConsumer: NV-Ingest Pipeline"]
+        V2["💾 Volume 2: PostgreSQL Data\nTier: Ultra\nProtocol: NFSv4.1\nAccess: RWO\nConsumer: PostgreSQL StatefulSet"]
+        V3["📝 Volume 3: PostgreSQL WAL\nTier: Ultra\nProtocol: NFSv4.1\nAccess: RWO\nConsumer: PostgreSQL StatefulSet"]
+        V4["🚀 Volume 4: NIMCache\nTier: Ultra\nProtocol: NFSv4.1\nAccess: RWX\nConsumer: All NIM Pods"]
+        V5["🧠 Volume 5: Agent Memory\nTier: Premium\nProtocol: NFSv4.1\nAccess: RWO per agent\nConsumer: NemoClaw Pods"]
+        V6["📋 Volume 6: Guardrails Config\nTier: Standard\nProtocol: NFSv4.1\nAccess: ROX\nConsumer: NeMo Guardrails NIM"]
+        V7["🔄 Volume 7: Snapshot Archive\nTier: Standard (Cool Access)\nProtocol: NFSv4.1\nConsumer: Backup/DR Jobs"]
+    end
+
+    subgraph FEATURES["ANF Data Management Features"]
+        SNAP["⚡ ROW Snapshots\n(Up to 255/volume)\nInstant, zero-overhead"]
+        MIRROR["🌍 SnapMirror\nCross-region replication\nPrivate backbone only"]
+        COOL["❄️ Cool Access\nAuto-tiering for\ninfrequent data"]
+        CLONE["🔁 Volume Cloning\nInstant clone from snapshot\nFor A/B testing"]
+    end
+
+    V2 --> SNAP
+    V3 --> SNAP
+    V5 --> SNAP
+    V2 --> MIRROR
+    V5 --> MIRROR
+    V1 --> COOL
+    V5 --> CLONE

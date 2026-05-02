@@ -1,0 +1,68 @@
+graph TB
+    subgraph INTERNET["External Zone"]
+        USER["👤 Enterprise User\n(Teams / Slack / WebUI)"]
+        EXTAPI["🌐 External APIs\n(Public Data Sources)"]
+    end
+
+    subgraph AZURE_VNET["Azure Private VNet"]
+        AGW["🛡️ Azure Application Gateway\n+ WAF (TLS Termination)"]
+
+        subgraph AKS["Azure Kubernetes Service (AKS)"]
+            subgraph AGENT_NS["Agent Namespace (OpenShell Sandbox)"]
+                NEMOCLAW["🤖 NemoClaw Agent\n(OpenClaw + NemoClaw Plugin)"]
+                OPENSHELL["🔒 NVIDIA OpenShell\n(L7 Proxy + Policy Engine)"]
+            end
+
+            subgraph GUARDRAILS_NS["Guardrails Namespace"]
+                GUARDRAILS["🛡️ NeMo Guardrails NIM\n(Colang Policies)"]
+            end
+
+            subgraph INFERENCE_NS["Inference Namespace (GPU Nodes)"]
+                LLM_NIM["🧠 Nemotron LLM NIM\n(Nemotron-4 340B / Nemotron 3)"]
+                EMBED_NIM["📐 Embedding NIM\n(NV-Embed-QA)"]
+                RERANK_NIM["🔢 Reranker NIM\n(nv-rerank)"]
+                OCR_NIM["📄 OCR / Parse NIM\n(PaddleOCR / Nemotron Parse)"]
+            end
+
+            subgraph INGEST_NS["Ingestion Namespace"]
+                NVINGEST["⚙️ NV-Ingest Pipeline\n(Chunking + Embedding)"]
+            end
+
+            subgraph DB_NS["Database Namespace"]
+                POSTGRES["🗄️ PostgreSQL + pgvector\n(HNSW + BM25 Hybrid Search)"]
+            end
+        end
+
+        subgraph ANF["Azure NetApp Files (Unified Storage)"]
+            ANF_DOCS["📁 Document Repository\n(Standard/Premium Tier)"]
+            ANF_PG["💾 PostgreSQL Data + WAL\n(Ultra Tier)"]
+            ANF_CACHE["🚀 NIMCache (Model Weights)\n(Ultra Tier, RWX)"]
+            ANF_AGENT["🧠 Agent Memory + Skills\n(Premium Tier)"]
+            ANF_GUARD["📋 Guardrails Config\n(Standard Tier)"]
+        end
+
+        KV["🔑 Azure Key Vault\n(Secrets)"]
+        ACR["📦 Azure Container Registry\n(NIM Images)"]
+        MON["📊 Azure Monitor\n+ Log Analytics"]
+    end
+
+    USER -->|HTTPS| AGW
+    AGW -->|Internal Route| NEMOCLAW
+    NEMOCLAW <-->|Sandboxed Execution| OPENSHELL
+    OPENSHELL <-->|Inference Proxy| GUARDRAILS
+    GUARDRAILS <-->|Validated Prompts| LLM_NIM
+    NEMOCLAW -->|RAG Tool Call| POSTGRES
+    POSTGRES <-->|Embedding Lookup| EMBED_NIM
+    POSTGRES <-->|Reranking| RERANK_NIM
+    NVINGEST -->|Read Raw Docs| ANF_DOCS
+    NVINGEST -->|OCR/Parse| OCR_NIM
+    NVINGEST -->|Generate Embeddings| EMBED_NIM
+    NVINGEST -->|Write Vectors| POSTGRES
+    LLM_NIM -->|Load Model Weights| ANF_CACHE
+    POSTGRES -->|Data Persistence| ANF_PG
+    NEMOCLAW -->|Memory + Skills| ANF_AGENT
+    GUARDRAILS -->|Load Policies| ANF_GUARD
+    OPENSHELL -->|Fetch Credentials| KV
+    AKS -->|Pull Images| ACR
+    AKS -->|Emit Metrics/Logs| MON
+    NEMOCLAW -.->|Field Agent: External Research| EXTAPI
