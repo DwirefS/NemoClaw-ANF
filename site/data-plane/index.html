@@ -1,0 +1,126 @@
+<!-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Data Plane | NemoClaw Enterprise Azure ANF</title>
+    <meta
+      name="description"
+      content="Data plane deep dive for AKS-hosted retrieval, grounded responses, and the custom pgvector integration path."
+    />
+    <link rel="stylesheet" href="../assets/styles/main.css" />
+    <script defer src="../assets/scripts/main.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="brand-kicker">Data plane</p>
+          <h1>AKS hosts the RAG and data plane.</h1>
+          <p class="hero-statement">
+            The retrieval path is explicit: application requests land in AKS, data is fetched from the durable
+            backends, and the assistant returns grounded results without mixing the worker tier into the service
+            boundary.
+          </p>
+          <nav class="hero-actions" aria-label="Site navigation">
+            <a class="button button-secondary" href="../index.html">Home</a>
+            <a class="button button-secondary" href="../architecture/index.html">Architecture</a>
+            <a class="button button-secondary" href="../data-plane/index.html" aria-current="page">Data plane</a>
+            <a class="button button-secondary" href="../security/index.html">Security</a>
+            <a class="button button-secondary" href="../storage/index.html">Storage</a>
+            <a class="button button-secondary" href="../use-cases/index.html">Use cases</a>
+            <a class="button button-secondary" href="../delivery-status/index.html">Delivery status</a>
+            <a class="button button-secondary" href="../artifacts/index.html">Artifacts</a>
+          </nav>
+        </div>
+        <aside class="hero-panel" aria-label="Data plane summary">
+          <p class="panel-label">Service path</p>
+          <ul class="summary-list">
+            <li>AKS carries the RAG and data plane services.</li>
+            <li>pgvector is the custom retrieval integration path.</li>
+            <li>PostgreSQL stores durable state and retrieval metadata.</li>
+            <li>Azure NetApp Files supports the shared file substrate.</li>
+          </ul>
+        </aside>
+      </header>
+
+      <main class="content">
+        <section class="section" aria-labelledby="flow-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Request flow</p>
+            <h2 id="flow-heading">Requests move through a grounded path instead of a monolithic assistant.</h2>
+            <p>
+              The site explains the data plane in terms of deterministic service steps so the public model can
+              distinguish inference, retrieval, and storage access.
+            </p>
+          </div>
+          <div class="stack-grid">
+            <article class="stack-card">
+              <h3>Ingress</h3>
+              <p>Requests arrive at the AKS-hosted service boundary and are checked before retrieval starts.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Retrieval</h3>
+              <p>pgvector powers the semantic lookup path as a custom integration, not a generic managed feature.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Grounding</h3>
+              <p>PostgreSQL and the shared storage layer provide stable references for the response assembly process.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Return path</h3>
+              <p>The response is emitted from the data plane while the worker tier stays outside the retrieval service boundary.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section split-section" aria-labelledby="custom-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Custom integration</p>
+            <h2 id="custom-heading">pgvector is a deliberate engineering path.</h2>
+            <p>
+              The architecture does not pretend that vector retrieval is a drop-in checkbox. pgvector is called
+              out as a custom integration path so the implementation work is visible and reviewable.
+            </p>
+          </div>
+          <div class="split-cards">
+            <article class="feature-card">
+              <h3>Indexing</h3>
+              <p>The vector index is managed alongside PostgreSQL state so retrieval and metadata stay co-located.</p>
+            </article>
+            <article class="feature-card">
+              <h3>Operational control</h3>
+              <p>Service behavior is kept in AKS, which makes the data plane easier to scale and observe separately from the worker tier.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="artifact-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Artifact links</p>
+            <h2 id="artifact-heading">The boards document the retrieval path and platform stack.</h2>
+          </div>
+          <div class="artifact-grid">
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Platform stack cloud diagram</h3>
+              <a href="../artifacts/enterprise-azure-anf/platform-stack-cloud-diagram.png">Open the board</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Enterprise architecture overview</h3>
+              <a href="../artifacts/enterprise-azure-anf/enterprise-architecture-overview-board.png">Open the board</a>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>Independent technical architecture effort. Not affiliated with, endorsed by, or sponsored by NVIDIA, Microsoft, NetApp, or PostgreSQL.</p>
+        <p>© <span data-current-year></span> NemoClaw Enterprise Azure ANF.</p>
+      </footer>
+    </div>
+  </body>
+</html>

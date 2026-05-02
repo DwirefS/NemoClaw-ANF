@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: retrieval-bootstrap
+  namespace: rag
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: ghcr.io/dwirefs/nemoclaw-anf/retrieval-api:dev
+          command: ["sh", "-lc", "npm run bootstrap"]
+          env:
+            - name: RETRIEVAL_API_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: retrieval-api-secrets
+                  key: postgres-dsn

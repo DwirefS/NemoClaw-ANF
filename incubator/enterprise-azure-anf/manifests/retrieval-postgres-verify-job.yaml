@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: retrieval-postgres-verify
+  namespace: rag
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: verify-postgres
+          image: ghcr.io/dwirefs/nemoclaw-anf/retrieval-api:dev
+          command: ["sh", "-lc", "npm run verify:postgres"]
+          env:
+            - name: RETRIEVAL_API_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: retrieval-api-secrets
+                  key: postgres-dsn

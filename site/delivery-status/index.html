@@ -1,0 +1,101 @@
+<!-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Delivery Status | NemoClaw Enterprise Azure ANF</title>
+    <meta
+      name="description"
+      content="Delivery status page for the validated implementation and remaining custom engineering work."
+    />
+    <link rel="stylesheet" href="../assets/styles/main.css" />
+    <script defer src="../assets/scripts/main.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="brand-kicker">Delivery status</p>
+          <h1>What is validated now, and what still needs custom engineering?</h1>
+          <p class="hero-statement">
+            This page separates the validated current implementation from the open work so the incubator status
+            is easy to read at a glance.
+          </p>
+          <nav class="hero-actions" aria-label="Site navigation">
+            <a class="button button-secondary" href="../index.html">Home</a>
+            <a class="button button-secondary" href="../architecture/index.html">Architecture</a>
+            <a class="button button-secondary" href="../data-plane/index.html">Data plane</a>
+            <a class="button button-secondary" href="../security/index.html">Security</a>
+            <a class="button button-secondary" href="../storage/index.html">Storage</a>
+            <a class="button button-secondary" href="../use-cases/index.html">Use cases</a>
+            <a class="button button-secondary" href="../delivery-status/index.html" aria-current="page">Delivery status</a>
+            <a class="button button-secondary" href="../artifacts/index.html">Artifacts</a>
+          </nav>
+        </div>
+        <aside class="hero-panel" aria-label="Status summary">
+          <p class="panel-label">Current posture</p>
+          <ul class="summary-list">
+            <li>validated current implementation</li>
+            <li>custom engineering still required</li>
+            <li>ACL-aware retrieval</li>
+          </ul>
+        </aside>
+      </header>
+
+      <main class="content">
+        <section class="section" aria-labelledby="status-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Implementation status</p>
+            <h2 id="status-heading">The published pages reflect the current baseline without overstating maturity.</h2>
+            <p>
+              The validated current implementation covers the public site surface, the stable artifact links, the
+              hybrid baseline narrative, and the separation between the worker tier and the AKS-hosted data plane.
+            </p>
+          </div>
+          <div class="stack-grid">
+            <article class="stack-card">
+              <h3>validated current implementation</h3>
+              <p>The public site pages, navigation, and artifact references are present and reviewable.</p>
+            </article>
+            <article class="stack-card">
+              <h3>custom engineering still required</h3>
+              <p>pgvector integration, retrieval workflow hardening, and policy-specific behaviors remain custom work.</p>
+            </article>
+            <article class="stack-card">
+              <h3>ACL-aware retrieval</h3>
+              <p>Access control still needs to be enforced as part of the retrieval path, not as an afterthought.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section split-section" aria-labelledby="gap-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Open gaps</p>
+            <h2 id="gap-heading">The remaining work is architectural, not cosmetic.</h2>
+            <p>
+              The top-level claim is straightforward: the current implementation validates the public surface, but
+              the retrieval and policy integrations still require custom engineering to reach the intended posture.
+            </p>
+          </div>
+          <div class="split-cards">
+            <article class="feature-card">
+              <h3>Retrieval hardening</h3>
+              <p>ACL-aware retrieval must be implemented carefully so access decisions follow the corpus and the user context.</p>
+            </article>
+            <article class="feature-card">
+              <h3>Integration work</h3>
+              <p>The pgvector path and related service wiring are custom engineering tasks, not already-finished defaults.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>Independent technical architecture effort. Not affiliated with, endorsed by, or sponsored by NVIDIA, Microsoft, NetApp, or PostgreSQL.</p>
+        <p>© <span data-current-year></span> NemoClaw Enterprise Azure ANF.</p>
+      </footer>
+    </div>
+  </body>
+</html>

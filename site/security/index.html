@@ -1,0 +1,107 @@
+<!-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Security | NemoClaw Enterprise Azure ANF</title>
+    <meta
+      name="description"
+      content="Security deep dive for field-agent and vault-agent trust separation, ACL-aware retrieval, and the worker boundary."
+    />
+    <link rel="stylesheet" href="../assets/styles/main.css" />
+    <script defer src="../assets/scripts/main.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="brand-kicker">Security</p>
+          <h1>Field-agent and vault-agent trust separation matters.</h1>
+          <p class="hero-statement">
+            The architecture does not treat every agent as equally trusted. Field agents operate in a lower-trust
+            zone with sanitized inputs, while vault agents handle privileged transitions, policy mediation, and
+            the more sensitive retrieval surfaces.
+          </p>
+          <nav class="hero-actions" aria-label="Site navigation">
+            <a class="button button-secondary" href="../index.html">Home</a>
+            <a class="button button-secondary" href="../architecture/index.html">Architecture</a>
+            <a class="button button-secondary" href="../data-plane/index.html">Data plane</a>
+            <a class="button button-secondary" href="../security/index.html" aria-current="page">Security</a>
+            <a class="button button-secondary" href="../storage/index.html">Storage</a>
+            <a class="button button-secondary" href="../use-cases/index.html">Use cases</a>
+            <a class="button button-secondary" href="../delivery-status/index.html">Delivery status</a>
+            <a class="button button-secondary" href="../artifacts/index.html">Artifacts</a>
+          </nav>
+        </div>
+        <aside class="hero-panel" aria-label="Security summary">
+          <p class="panel-label">Trust model</p>
+          <ul class="summary-list">
+            <li>Field-agent / vault-agent separation defines the public trust boundary.</li>
+            <li>ACL-aware retrieval is the correct access model for sensitive corpora.</li>
+            <li>Worker execution remains separate from the high-trust data plane.</li>
+            <li>Policy, redaction, and audit stay visible in the architecture narrative.</li>
+          </ul>
+        </aside>
+      </header>
+
+      <main class="content">
+        <section class="section" aria-labelledby="boundary-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Boundaries</p>
+            <h2 id="boundary-heading">Security is built around explicit handoffs, not blanket trust.</h2>
+            <p>
+              The pages describe how data moves between trust zones so review can focus on the actual transition
+              points instead of assuming the assistant can read everything everywhere.
+            </p>
+          </div>
+          <div class="stack-grid">
+            <article class="stack-card">
+              <h3>Field agents</h3>
+              <p>Operate with constrained data and narrow scope so they can gather context without broad access.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Vault agents</h3>
+              <p>Handle privileged retrieval and secret-aware operations under policy and audit control.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Retrieval policy</h3>
+              <p>ACL-aware retrieval keeps access decisions attached to the requested corpus, not to a generic model prompt.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Worker isolation</h3>
+              <p>NemoClaw/OpenShell workers remain separate so the execution tier does not inherit the data plane trust level.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section split-section" aria-labelledby="controls-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Controls</p>
+            <h2 id="controls-heading">The model makes policy enforcement visible.</h2>
+            <p>
+              The architecture uses mediation, masking, and bounded retrieval to keep the public story aligned with
+              the actual security posture.
+            </p>
+          </div>
+          <div class="split-cards">
+            <article class="feature-card">
+              <h3>Policy mediation</h3>
+              <p>Requests cross from low trust to high trust only after the appropriate checks and gates run.</p>
+            </article>
+            <article class="feature-card">
+              <h3>Audit and redaction</h3>
+              <p>Sensitive data handling is framed in terms reviewers can inspect rather than hidden behind a single assistant surface.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>Independent technical architecture effort. Not affiliated with, endorsed by, or sponsored by NVIDIA, Microsoft, NetApp, or PostgreSQL.</p>
+        <p>© <span data-current-year></span> NemoClaw Enterprise Azure ANF.</p>
+      </footer>
+    </div>
+  </body>
+</html>

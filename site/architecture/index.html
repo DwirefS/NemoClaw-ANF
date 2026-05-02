@@ -1,0 +1,132 @@
+<!-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Architecture | NemoClaw Enterprise Azure ANF</title>
+    <meta
+      name="description"
+      content="Architecture deep dive for the hybrid baseline, AKS-hosted RAG/data plane, and separate NemoClaw/OpenShell worker tier."
+    />
+    <link rel="stylesheet" href="../assets/styles/main.css" />
+    <script defer src="../assets/scripts/main.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="brand-kicker">Architecture</p>
+          <h1>Hybrid baseline, split control planes, and a visible worker boundary.</h1>
+          <p class="hero-statement">
+            The supported baseline is hybrid. AKS hosts the RAG and data plane, while the NemoClaw/OpenShell
+            worker tier stays separate so the public architecture can show where execution, retrieval, and
+            storage are intentionally divided.
+          </p>
+          <nav class="hero-actions" aria-label="Site navigation">
+            <a class="button button-secondary" href="../index.html">Home</a>
+            <a class="button button-secondary" href="../architecture/index.html" aria-current="page">Architecture</a>
+            <a class="button button-secondary" href="../data-plane/index.html">Data plane</a>
+            <a class="button button-secondary" href="../security/index.html">Security</a>
+            <a class="button button-secondary" href="../storage/index.html">Storage</a>
+            <a class="button button-secondary" href="../use-cases/index.html">Use cases</a>
+            <a class="button button-secondary" href="../delivery-status/index.html">Delivery status</a>
+            <a class="button button-secondary" href="../artifacts/index.html">Artifacts</a>
+          </nav>
+        </div>
+        <aside class="hero-panel" aria-label="Architecture summary">
+          <p class="panel-label">Baseline summary</p>
+          <ul class="summary-list">
+            <li>Supported baseline is hybrid, not a single-zone public cloud-only diagram.</li>
+            <li>AKS hosts the RAG and data plane for retrieval and service orchestration.</li>
+            <li>NemoClaw/OpenShell worker tier remains separate from the retrieval plane.</li>
+            <li>pgvector is a custom integration path, not a generic checkbox feature.</li>
+          </ul>
+        </aside>
+      </header>
+
+      <main class="content">
+        <section class="section" aria-labelledby="layer-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Layering</p>
+            <h2 id="layer-heading">The architecture is organized around explicit trust and runtime boundaries.</h2>
+            <p>
+              The public pages keep the control plane, data plane, and worker tier legible. That makes it easier
+              to explain where the assistant can retrieve, where it can execute, and where policy gates the
+              transition between the two.
+            </p>
+          </div>
+          <div class="stack-grid">
+            <article class="stack-card">
+              <h3>Control plane</h3>
+              <p>NemoClaw coordinates onboarding, policy, and delivery orchestration but does not collapse the worker boundary.</p>
+            </article>
+            <article class="stack-card">
+              <h3>AKS data plane</h3>
+              <p>AKS hosts the retrieval and service tier so RAG behavior stays isolated from the worker runtime.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Worker tier</h3>
+              <p>NemoClaw/OpenShell workers remain separate to preserve the intended trust split and sandbox control.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Storage and state</h3>
+              <p>Azure NetApp Files and PostgreSQL hold the durable project state that the retrieval plane consumes.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section split-section" aria-labelledby="baseline-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Baseline</p>
+            <h2 id="baseline-heading">The hybrid model is the supported baseline.</h2>
+            <p>
+              The incubator baseline assumes a hybrid deployment, with enterprise concerns expressed through
+              concrete storage, policy, and retrieval boundaries rather than an abstract all-in-one platform.
+            </p>
+          </div>
+          <div class="split-cards">
+            <article class="feature-card">
+              <h3>Enterprise side</h3>
+              <p>Holds the persistent services, data access rules, and storage-backed state used by the public reference stack.</p>
+            </article>
+            <article class="feature-card">
+              <h3>Sandbox side</h3>
+              <p>Runs the worker tier that interprets instructions, prepares output, and hands off to the data plane by policy.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="artifact-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Reference material</p>
+            <h2 id="artifact-heading">The public boards and deck stay visible from the architecture page.</h2>
+          </div>
+          <div class="artifact-grid">
+            <article class="artifact-card">
+              <p class="artifact-label">PDF</p>
+              <h3>Sovereign Agentic Factory</h3>
+              <a href="../artifacts/enterprise-azure-anf/sovereign-agentic-factory.pdf">Open the stable PDF artifact</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Enterprise architecture overview</h3>
+              <a href="../artifacts/enterprise-azure-anf/enterprise-architecture-overview-board.png">View the board</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Field and vault secure gateway</h3>
+              <a href="../artifacts/enterprise-azure-anf/field-vault-secure-gateway-board.png">View the board</a>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>Independent technical architecture effort. Not affiliated with, endorsed by, or sponsored by NVIDIA, Microsoft, NetApp, or PostgreSQL.</p>
+        <p>© <span data-current-year></span> NemoClaw Enterprise Azure ANF.</p>
+      </footer>
+    </div>
+  </body>
+</html>
