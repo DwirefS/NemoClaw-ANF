@@ -1,0 +1,114 @@
+<!-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Storage | NemoClaw Enterprise Azure ANF</title>
+    <meta
+      name="description"
+      content="Storage deep dive for Azure NetApp Files, PostgreSQL, pgvector, and the visible public artifact store."
+    />
+    <link rel="stylesheet" href="../assets/styles/main.css" />
+    <script defer src="../assets/scripts/main.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="brand-kicker">Storage</p>
+          <h1>Azure NetApp Files anchors the durable workspace.</h1>
+          <p class="hero-statement">
+            The storage story keeps file-backed collaboration, PostgreSQL state, and retrieval index data visible
+            as separate concerns. That helps explain how the architecture can be stable without pretending the
+            assistant is stateless.
+          </p>
+          <nav class="hero-actions" aria-label="Site navigation">
+            <a class="button button-secondary" href="../index.html">Home</a>
+            <a class="button button-secondary" href="../architecture/index.html">Architecture</a>
+            <a class="button button-secondary" href="../data-plane/index.html">Data plane</a>
+            <a class="button button-secondary" href="../security/index.html">Security</a>
+            <a class="button button-secondary" href="../storage/index.html" aria-current="page">Storage</a>
+            <a class="button button-secondary" href="../use-cases/index.html">Use cases</a>
+            <a class="button button-secondary" href="../delivery-status/index.html">Delivery status</a>
+            <a class="button button-secondary" href="../artifacts/index.html">Artifacts</a>
+          </nav>
+        </div>
+        <aside class="hero-panel" aria-label="Storage summary">
+          <p class="panel-label">Persistence model</p>
+          <ul class="summary-list">
+            <li>Azure NetApp Files supports the shared file layer.</li>
+            <li>PostgreSQL preserves metadata and delivery state.</li>
+            <li>pgvector is the custom integration path for retrieval indexes.</li>
+            <li>Published artifacts stay in a repo-owned store with stable filenames.</li>
+          </ul>
+        </aside>
+      </header>
+
+      <main class="content">
+        <section class="section" aria-labelledby="storage-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Durability</p>
+            <h2 id="storage-heading">Each persistence layer has a specific role.</h2>
+            <p>
+              The architecture keeps file storage, relational state, and vector retrieval separate so the public
+              story is easy to audit and the implementation can evolve without collapsing those roles together.
+            </p>
+          </div>
+          <div class="stack-grid">
+            <article class="stack-card">
+              <h3>Azure NetApp Files</h3>
+              <p>Shared storage for the working surface, collaboration paths, and artifact handoff.</p>
+            </article>
+            <article class="stack-card">
+              <h3>PostgreSQL</h3>
+              <p>System-of-record storage for metadata, workflow state, and delivery evidence.</p>
+            </article>
+            <article class="stack-card">
+              <h3>pgvector</h3>
+              <p>The vector path is custom engineered so retrieval behavior is observable and intentional.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Artifact store</h3>
+              <p>The public PNG boards and PDF stay in a visible repo-owned location with stable filenames.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section split-section" aria-labelledby="artifact-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Artifact paths</p>
+            <h2 id="artifact-heading">The published files are linked directly from the pages.</h2>
+            <p>
+              The public site references the boards and deck by their stable filenames so the artifact set can be
+              reviewed without guessing which copy is current.
+            </p>
+          </div>
+          <div class="artifact-grid">
+            <article class="artifact-card">
+              <p class="artifact-label">PDF</p>
+              <h3>Sovereign Agentic Factory</h3>
+              <a href="../artifacts/enterprise-azure-anf/sovereign-agentic-factory.pdf">Open the PDF</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Enterprise architecture overview</h3>
+              <a href="../artifacts/enterprise-azure-anf/enterprise-architecture-overview-board.png">Open the PNG</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Field and vault secure gateway</h3>
+              <a href="../artifacts/enterprise-azure-anf/field-vault-secure-gateway-board.png">Open the PNG</a>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>Independent technical architecture effort. Not affiliated with, endorsed by, or sponsored by NVIDIA, Microsoft, NetApp, or PostgreSQL.</p>
+        <p>© <span data-current-year></span> NemoClaw Enterprise Azure ANF.</p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,183 @@
+<!-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NemoClaw Enterprise Azure ANF</title>
+    <meta
+      name="description"
+      content="Independent technical architecture for a sovereign agentic factory built on Azure NetApp Files, NVIDIA NIM, Nemotron, PostgreSQL, and pgvector."
+    />
+    <link rel="stylesheet" href="./assets/styles/main.css" />
+    <script defer src="./assets/scripts/main.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="brand-kicker">Enterprise Azure ANF</p>
+          <h1>Sovereign agentic factory operations on Azure NetApp Files.</h1>
+          <p class="hero-statement">
+            NemoClaw is the project-owned overlay for an independent technical architecture effort that combines
+            Field Agent orchestration, Vault Agent secret handling, NVIDIA NIM inference, Nemotron reasoning,
+            PostgreSQL state, and pgvector retrieval into a single public reference stack.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="artifacts/enterprise-azure-anf/sovereign-agentic-factory.pdf">
+              View the PDF artifact
+            </a>
+            <a class="button button-secondary" href="#artifacts">Explore the artifact set</a>
+          </div>
+        </div>
+        <aside class="hero-panel" aria-label="Architecture summary">
+          <p class="panel-label">Architecture at a glance</p>
+          <ul class="summary-list">
+            <li>Azure NetApp Files anchors the durable workspace and data paths.</li>
+            <li>NVIDIA NIM serves model access while Nemotron provides the reasoning layer.</li>
+            <li>PostgreSQL and pgvector preserve state, retrieval, and grounded memory.</li>
+          </ul>
+        </aside>
+      </header>
+
+      <main class="content">
+        <section class="section" aria-labelledby="stack-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Technology stack</p>
+            <h2 id="stack-heading">The stack is intentionally narrow and explainable.</h2>
+            <p>
+              The public surface keeps the core platform visible: Azure NetApp Files for resilient storage,
+              NVIDIA NIM for model serving, Nemotron for the reasoning model, PostgreSQL for system state,
+              and pgvector for semantic retrieval.
+            </p>
+          </div>
+          <div class="stack-grid">
+            <article class="stack-card">
+              <h3>Azure NetApp Files</h3>
+              <p>High-performance shared storage for durable project state, artifact exchange, and sandbox-backed workflows.</p>
+            </article>
+            <article class="stack-card">
+              <h3>NVIDIA NIM</h3>
+              <p>Inference endpoints that expose the model layer through a controlled, production-shaped interface.</p>
+            </article>
+            <article class="stack-card">
+              <h3>Nemotron</h3>
+              <p>The reasoning model used to keep the architecture grounded in structured, explainable outputs.</p>
+            </article>
+            <article class="stack-card">
+              <h3>PostgreSQL</h3>
+              <p>The system of record for metadata, operational state, and delivery tracking.</p>
+            </article>
+            <article class="stack-card">
+              <h3>pgvector</h3>
+              <p>Vector search for retrieval-augmented responses, semantic lookup, and reusable context.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section split-section" aria-labelledby="agents-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Field Agent / Vault Agent</p>
+            <h2 id="agents-heading">Field Agent handles execution; Vault Agent protects the trust boundary.</h2>
+            <p>
+              Field Agent coordinates the operational workflow across the sandbox, while Vault Agent keeps secrets
+              isolated, scoped, and auditable. The pairing is meant to be legible to reviewers rather than magical.
+            </p>
+          </div>
+          <div class="split-cards">
+            <article class="feature-card">
+              <h3>Field Agent</h3>
+              <p>
+                Task-focused orchestration for data gathering, content assembly, and delivery checks within the
+                project-owned site workflow.
+              </p>
+            </article>
+            <article class="feature-card">
+              <h3>Vault Agent</h3>
+              <p>
+                Secret access broker that limits blast radius, preserves traceability, and keeps the assistant
+                boundary explicit.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section value-section" aria-labelledby="anf-heading">
+          <div class="section-heading">
+            <p class="section-kicker">ANF value</p>
+            <h2 id="anf-heading">Azure NetApp Files is the storage and collaboration backbone.</h2>
+            <p>
+              The ANF layer gives the factory a shared substrate for low-latency files, stable handoffs, and
+              repeatable artifact publishing without making the site depend on fragile runtime state.
+            </p>
+          </div>
+          <div class="value-grid">
+            <article class="value-card">
+              <h3>Durable shared state</h3>
+              <p>Supports predictable read/write access for the assistant workflow and generated artifacts.</p>
+            </article>
+            <article class="value-card">
+              <h3>Operational separation</h3>
+              <p>Keeps platform data, reasoning state, and published outputs cleanly separated.</p>
+            </article>
+            <article class="value-card">
+              <h3>Project-owned publishing</h3>
+              <p>Makes the artifact store visible from the public site without introducing nested app routes.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="artifacts" aria-labelledby="artifacts-heading">
+          <div class="section-heading">
+            <p class="section-kicker">Artifact highlight</p>
+            <h2 id="artifacts-heading">Public artifacts stay visible from the landing page.</h2>
+            <p>
+              The PDF deck and the architecture boards are published as stable repo-owned files so the public
+              site can point at them directly.
+            </p>
+          </div>
+          <div class="artifact-grid">
+            <article class="artifact-card artifact-card-featured">
+              <p class="artifact-label">Primary deck</p>
+              <h3>Sovereign Agentic Factory</h3>
+              <p>
+                The PDF artifact captures the higher-level architecture narrative and is linked directly from the
+                hero for fast access.
+              </p>
+              <a href="artifacts/enterprise-azure-anf/sovereign-agentic-factory.pdf">Open the PDF artifact</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Enterprise architecture overview</h3>
+              <a href="artifacts/enterprise-azure-anf/enterprise-architecture-overview-board.png">View PNG board</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Field and vault secure gateway</h3>
+              <a href="artifacts/enterprise-azure-anf/field-vault-secure-gateway-board.png">View PNG board</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Platform stack diagram</h3>
+              <a href="artifacts/enterprise-azure-anf/platform-stack-cloud-diagram.png">View PNG board</a>
+            </article>
+            <article class="artifact-card">
+              <p class="artifact-label">Board</p>
+              <h3>Enterprise architecture poster</h3>
+              <a href="artifacts/enterprise-azure-anf/enterprise-architecture-poster.png">View PNG board</a>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Independent technical architecture effort. Not affiliated with, endorsed by, or sponsored by NVIDIA,
+          Microsoft, NetApp, or PostgreSQL.
+        </p>
+        <p>© <span data-current-year></span> NemoClaw Enterprise Azure ANF.</p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -27,6 +27,30 @@ Bootstrap support:
   - applies the SQL migration files in `sql/`
   - expects `RETRIEVAL_API_DATABASE_URL`
 
+## Database Bootstrap
+
+Run the bootstrap job before the retrieval API deployment points at a fresh PostgreSQL instance.
+
+The bootstrap flow applies the SQL files under `sql/` through the package-owned migration runner:
+
+```bash
+npm run bootstrap
+```
+
+## Live PostgreSQL Verification
+
+Use the package-owned verification script after bootstrap completes and before enabling live retrieval against a newly provisioned or changed PostgreSQL instance.
+
+```bash
+npm run verify:postgres
+```
+
+The verification checks:
+
+- the `vector` extension
+- the `document_chunks` table
+- the expected embedding and full-text indexes
+
 Current modules:
 
 - `src/bootstrap.ts` applies the retrieval-store SQL migrations

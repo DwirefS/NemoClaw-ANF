@@ -9,7 +9,10 @@ items:
     metadata:
       name: retrieval-api
       namespace: rag
+      annotations:
+        nemo.claw.ai/bootstrap-job: retrieval-bootstrap
     spec:
+      # Run the retrieval bootstrap job before this deployment targets a fresh PostgreSQL instance.
       replicas: 2
       selector:
         matchLabels:
