@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { createRetrievalBackendFromConfig } from "./backend-factory";
-import { loadRetrievalApiConfig } from "./config";
-import { createRetrievalApiServer } from "./server";
+import { createRetrievalBackendFromConfig } from "./backend-factory.ts";
+import { loadRetrievalApiConfig } from "./config.ts";
+import { createRetrievalApiServer } from "./server.ts";
 
 async function main() {
   const config = loadRetrievalApiConfig();

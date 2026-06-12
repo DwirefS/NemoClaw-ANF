@@ -3,6 +3,9 @@
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
+-- Dimension is coupled to DEFAULT_EMBEDDING_MODEL (nvidia/nv-embedqa-e5-v5 -> 1024).
+-- pgvector HNSW indexes reject vector columns above 2000 dimensions, so any
+-- model change past that bound also requires a halfvec index strategy.
 CREATE TABLE IF NOT EXISTS document_chunks (
   id TEXT PRIMARY KEY,
   source_id TEXT NOT NULL,
@@ -11,7 +14,7 @@ CREATE TABLE IF NOT EXISTS document_chunks (
   classification TEXT NOT NULL,
   content TEXT NOT NULL,
   metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-  embedding vector(3072) NOT NULL,
+  embedding vector(1024) NOT NULL,
   tsv tsvector GENERATED ALWAYS AS (
     to_tsvector('english', coalesce(title, '') || ' ' || coalesce(content, ''))
   ) STORED,

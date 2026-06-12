@@ -29,7 +29,8 @@ export function loadRetrievalApiConfig(
     serviceName: env.RETRIEVAL_API_SERVICE_NAME || "retrieval-api",
     backend: env.RETRIEVAL_API_BACKEND === "pgvector" ? "pgvector" : "static",
     databaseUrl: env.RETRIEVAL_API_DATABASE_URL,
-    embeddingEndpoint: env.EMBEDDING_ENDPOINT || "http://nemo-embedder.inference.svc.cluster.local:8000",
+    embeddingEndpoint:
+      env.EMBEDDING_ENDPOINT || "http://nemo-embedder.inference.svc.cluster.local:8000",
     rerankEndpoint: env.RERANK_ENDPOINT || "http://nemo-reranker.inference.svc.cluster.local:8000",
     nimApiKey: env.NIM_API_KEY,
   };

@@ -12,10 +12,11 @@ describe("enterprise retrieval migrations", () => {
   it("lists SQL migration files in stable sorted order", () => {
     expect(listSqlMigrationFiles(path.join(repoRoot, "enterprise/services/retrieval-api/sql"))).toEqual([
       path.join(repoRoot, "enterprise/services/retrieval-api/sql/001_document_chunks.sql"),
+      path.join(repoRoot, "enterprise/services/retrieval-api/sql/002_acl_principals.sql"),
     ]);
   });
 
-  it("applies each SQL migration file to the provided query client", async () => {
+  it("applies each pending SQL migration and records it in the ledger", async () => {
     const queries: string[] = [];
     const query = vi.fn(async (sql: string) => {
       queries.push(sql);
@@ -27,9 +28,34 @@ describe("enterprise retrieval migrations", () => {
       path.join(repoRoot, "enterprise/services/retrieval-api/sql"),
     );
 
-    expect(query).toHaveBeenCalledTimes(1);
-    expect(queries[0]).toContain("CREATE TABLE IF NOT EXISTS document_chunks");
-    expect(queries[0]).toContain("CREATE INDEX IF NOT EXISTS document_chunks_embedding_hnsw_idx");
+    expect(queries[0]).toContain("CREATE TABLE IF NOT EXISTS schema_migrations");
+    expect(queries[1]).toContain("SELECT filename FROM schema_migrations");
+    expect(queries[2]).toContain("CREATE TABLE IF NOT EXISTS document_chunks");
+    expect(queries[2]).toContain("CREATE INDEX IF NOT EXISTS document_chunks_embedding_hnsw_idx");
+    expect(queries[3]).toContain("INSERT INTO schema_migrations");
+    expect(queries[4]).toContain("acl_principals");
+    expect(queries[5]).toContain("INSERT INTO schema_migrations");
+  });
+
+  it("skips migrations that are already recorded in the ledger", async () => {
+    const queries: string[] = [];
+    const query = vi.fn(async (sql: string) => {
+      queries.push(sql);
+      if (sql.includes("SELECT filename FROM schema_migrations")) {
+        return { rows: [{ filename: "001_document_chunks.sql" }] };
+      }
+      return { rows: [] };
+    });
+
+    await applySqlMigrations(
+      { query },
+      path.join(repoRoot, "enterprise/services/retrieval-api/sql"),
+    );
+
+    const applied = queries.filter((sql) => sql.includes("CREATE TABLE IF NOT EXISTS document_chunks"));
+    expect(applied).toHaveLength(0);
+    const aclApplied = queries.filter((sql) => sql.includes("acl_principals TEXT[]"));
+    expect(aclApplied).toHaveLength(1);
   });
 
   it("exposes a runnable bootstrap entrypoint script in the retrieval package", () => {

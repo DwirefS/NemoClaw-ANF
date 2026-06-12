@@ -17,13 +17,42 @@ describe("enterprise retrieval pgvector query planning", () => {
     expect(plan.limit).toBe(12);
     expect(plan.policy.filteredCollections).toEqual(["enterprise-public"]);
     expect(plan.policy.deniedCollections).toEqual(["enterprise-sensitive"]);
-    expect(plan.parameterOrder).toEqual(["queryEmbedding", "collections", "queryText", "limit", "rrfK"]);
+    expect(plan.parameterOrder).toEqual([
+      "queryEmbedding",
+      "collections",
+      "queryText",
+      "limit",
+      "rrfK",
+      "principals",
+    ]);
     expect(plan.parameters.collections).toEqual(["enterprise-public"]);
     expect(plan.parameters.queryText).toBe("What changed in the last release?");
     expect(plan.sql).toContain("WITH vector_hits AS");
     expect(plan.sql).toContain("collection = ANY($2)");
+    expect(plan.sql).toContain("embedding <=> $1::vector");
+    expect(plan.sql).toContain("(acl_principals = '{}' OR acl_principals && $6)");
     expect(plan.sql).toContain("plainto_tsquery('english', $3)");
     expect(plan.sql).toContain("1.0 / ($5 +");
+  });
+
+  it("strips principals from sanitized-only field-agent plans", () => {
+    const plan = buildHybridSearchPlan({
+      query: "supplier pricing",
+      role: "field-agent",
+      principals: ["group:supply-chain"],
+    });
+
+    expect(plan.parameters.principals).toEqual([]);
+  });
+
+  it("passes principals through for restricted-enterprise vault-agent plans", () => {
+    const plan = buildHybridSearchPlan({
+      query: "supplier pricing",
+      role: "vault-agent",
+      principals: ["group:supply-chain"],
+    });
+
+    expect(plan.parameters.principals).toEqual(["group:supply-chain"]);
   });
 
   it("builds a vault-agent plan that preserves restricted collection access", () => {

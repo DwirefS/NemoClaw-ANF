@@ -38,9 +38,7 @@ export interface ChatCompletionPayload {
   temperature: number;
 }
 
-export function buildEmbeddingNimRequest(
-  query: string,
-): NimRequest<EmbeddingNimPayload> {
+export function buildEmbeddingNimRequest(query: string): NimRequest<EmbeddingNimPayload> {
   return {
     path: "/v1/embeddings",
     payload: {
@@ -67,9 +65,7 @@ export function buildRerankingNimRequest(
   };
 }
 
-export function buildNemotronChatRequest(
-  prompt: string,
-): NimRequest<ChatCompletionPayload> {
+export function buildNemotronChatRequest(prompt: string): NimRequest<ChatCompletionPayload> {
   return {
     path: "/v1/chat/completions",
     payload: {

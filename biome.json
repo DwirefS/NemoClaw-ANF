@@ -21,6 +21,8 @@
       "test/**/*.js",
       "docs/_ext/**/*.js",
       "nemoclaw/src/**/*.ts",
+      "enterprise/services/retrieval-api/src/**/*.ts",
+      "enterprise/services/retrieval-api/scripts/**/*.mjs",
       "!dist",
       "!nemoclaw/dist",
       "!node_modules",

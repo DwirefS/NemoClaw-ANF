@@ -18,31 +18,31 @@ const client = new Client({ connectionString: databaseUrl });
 const run = async () => {
   await client.connect();
 
-  const extension = await client.query(
-    "select extname from pg_extension where extname = 'vector'",
-  );
+  const extension = await client.query("select extname from pg_extension where extname = 'vector'");
   const table = await client.query(
     "select table_name from information_schema.tables where table_schema = 'public' and table_name = 'document_chunks'",
   );
-  const indexes = await client.query(`
+  const expectedIndexes = [
+    "document_chunks_embedding_hnsw_idx",
+    "document_chunks_tsv_gin_idx",
+    "document_chunks_acl_principals_gin_idx",
+  ];
+  const indexes = await client.query(
+    `
     select indexname
     from pg_indexes
     where schemaname = 'public'
       and tablename = 'document_chunks'
-      and indexname in ('document_chunks_embedding_idx', 'document_chunks_fts_idx')
+      and indexname = any($1)
     order by indexname
-  `);
+  `,
+    [expectedIndexes],
+  );
 
   const extensionReady = extension.rowCount === 1;
   const tableReady = table.rowCount === 1;
   const presentIndexes = indexes.rows.map((row) => row.indexname);
-  const expectedIndexes = [
-    "document_chunks_embedding_idx",
-    "document_chunks_fts_idx",
-  ];
-  const missingIndexes = expectedIndexes.filter(
-    (name) => !presentIndexes.includes(name),
-  );
+  const missingIndexes = expectedIndexes.filter((name) => !presentIndexes.includes(name));
 
   console.log("Verification summary");
   console.log(`vector extension: ${extensionReady ? "present" : "missing"}`);

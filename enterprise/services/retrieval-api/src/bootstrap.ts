@@ -4,8 +4,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Pool } from "pg";
-import { loadRetrievalApiConfig } from "./config";
-import { applySqlMigrations } from "./migrations";
+import { loadRetrievalApiConfig } from "./config.ts";
+import { applySqlMigrations } from "./migrations.ts";
 
 async function main() {
   const config = loadRetrievalApiConfig();
@@ -16,10 +16,7 @@ async function main() {
   const pool = new Pool({
     connectionString: config.databaseUrl,
   });
-  const sqlDirectory = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "../sql",
-  );
+  const sqlDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../sql");
 
   try {
     await applySqlMigrations(pool, sqlDirectory);

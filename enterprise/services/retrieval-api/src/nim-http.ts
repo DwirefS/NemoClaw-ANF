@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  DEFAULT_EMBEDDING_MODEL,
-  DEFAULT_RERANKING_MODEL,
   buildEmbeddingNimRequest,
   buildRerankingNimRequest,
-} from "./nvidia";
+  DEFAULT_EMBEDDING_MODEL,
+  DEFAULT_RERANKING_MODEL,
+} from "./nvidia.ts";
 
 export interface FetchOptions {
   fetchImpl?: typeof fetch;
@@ -101,9 +101,7 @@ export function createNimEmbeddingProvider(
   };
 }
 
-export function createNimRerankingProvider(
-  options: RerankingProviderOptions,
-): RerankingProvider {
+export function createNimRerankingProvider(options: RerankingProviderOptions): RerankingProvider {
   return {
     async rerank(query: string, passages: string[]) {
       const request = buildRerankingNimRequest(query, passages);

@@ -46,17 +46,21 @@ describe("enterprise pgvector backend", () => {
       role: "vault-agent",
       collections: ["enterprise-sensitive"],
       maxResults: 3,
+      principals: ["group:finance"],
     });
 
     expect(embedQuery).toHaveBeenCalledWith("Summarize the Q4 forecast variance");
     expect(query).toHaveBeenCalledTimes(1);
     expect(query.mock.calls[0]?.[0]).toContain("WITH vector_hits AS");
     expect(query.mock.calls[0]?.[1]).toEqual([
-      [0.25, 0.5, 0.75],
+      // The embedding travels as a pgvector text literal, never a JS array,
+      // because node-postgres would encode an array as "{...}".
+      "[0.25,0.5,0.75]",
       ["enterprise-sensitive"],
       "Summarize the Q4 forecast variance",
       3,
       60,
+      ["group:finance"],
     ]);
     expect(results).toEqual([
       {

@@ -1,13 +1,17 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import http from "node:http";
 import { randomUUID } from "node:crypto";
+import http from "node:http";
 import type { AddressInfo } from "node:net";
-import type { RetrievalApiConfig } from "./config";
-import type { ErrorResponseBody, RetrievalRequestBody, RetrievalResponseBody } from "./contracts";
-import type { RetrievalBackend } from "./backend";
-import { resolveRetrievalPolicy } from "./policy";
+import type { RetrievalBackend } from "./backend.ts";
+import type { RetrievalApiConfig } from "./config.ts";
+import type {
+  ErrorResponseBody,
+  RetrievalRequestBody,
+  RetrievalResponseBody,
+} from "./contracts.ts";
+import { resolveRetrievalPolicy } from "./policy.ts";
 
 export interface RetrievalApiServer {
   listen(): Promise<void>;
@@ -49,7 +53,18 @@ function parseRequestBody(rawBody: string): RetrievalRequestBody | null {
       return null;
     }
 
-    if (body.maxResults !== undefined && (!Number.isInteger(body.maxResults) || body.maxResults < 1)) {
+    if (
+      body.maxResults !== undefined &&
+      (!Number.isInteger(body.maxResults) || body.maxResults < 1)
+    ) {
+      return null;
+    }
+
+    if (body.principals && !Array.isArray(body.principals)) {
+      return null;
+    }
+
+    if (body.principals?.some((value) => typeof value !== "string" || value.trim() === "")) {
       return null;
     }
 
@@ -58,6 +73,7 @@ function parseRequestBody(rawBody: string): RetrievalRequestBody | null {
       role: body.role,
       collections: body.collections,
       maxResults: body.maxResults,
+      principals: body.principals,
     };
   } catch {
     return null;
@@ -106,6 +122,7 @@ export function createRetrievalApiServer(options: CreateServerOptions): Retrieva
         role: body.role,
         collections: policy.filteredCollections,
         maxResults: policy.maxResults,
+        principals: policy.principals,
       });
 
       const payload: RetrievalResponseBody = {

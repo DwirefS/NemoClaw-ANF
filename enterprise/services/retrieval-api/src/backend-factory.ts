@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { createStaticBackend, type RetrievalBackend } from "./backend";
-import type { RetrievalBackendConfig } from "./config";
-import { createNimEmbeddingProvider, createNimRerankingProvider } from "./nim-http";
-import { createPgvectorBackend, type PgvectorQueryClient } from "./pgvector-backend";
+import { createStaticBackend, type RetrievalBackend } from "./backend.ts";
+import type { RetrievalBackendConfig } from "./config.ts";
+import { createNimEmbeddingProvider, createNimRerankingProvider } from "./nim-http.ts";
+import { createPgvectorBackend, type PgvectorQueryClient } from "./pgvector-backend.ts";
 
 export interface PgPoolModule {
   Pool: new (config: { connectionString: string }) => PgvectorQueryClient;
