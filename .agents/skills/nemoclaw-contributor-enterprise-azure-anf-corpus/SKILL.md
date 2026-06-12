@@ -9,10 +9,10 @@ Start with the incubator corpus docs, not the raw research dump.
 
 ## Read Order
 
-1. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/corpus/README.md`
-2. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/corpus/canonical-source-map.md`
-3. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/corpus/manifest.yaml`
-4. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/corpus/graph.json`
+1. `incubator/enterprise-azure-anf/corpus/README.md`
+2. `incubator/enterprise-azure-anf/corpus/canonical-source-map.md`
+3. `incubator/enterprise-azure-anf/corpus/manifest.yaml`
+4. `incubator/enterprise-azure-anf/corpus/graph.json`
 
 ## Use This Skill When
 

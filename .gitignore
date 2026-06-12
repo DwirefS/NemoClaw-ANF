@@ -20,6 +20,10 @@ draft_newsletter_*
 research/
 specs/
 vdr-notes/
+# The enterprise incubator specs are repo-owned program documents, not
+# maintainer scratch space. Without this negation the generic specs/ rule
+# silently swallowed them (specs 00-14 and 18 were lost this way).
+!incubator/enterprise-azure-anf/specs/
 
 # Security: secrets, credentials, and keys
 *_ecdsa

@@ -9,7 +9,7 @@ Accepted
 
 ## Decision
 
-The enterprise Azure ANF program lives first in `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/` and in hand-authored contributor assets, not in official user docs or generated `nemoclaw-user-*` skills.
+The enterprise Azure ANF program lives first in `incubator/enterprise-azure-anf/` and in hand-authored contributor assets, not in official user docs or generated `nemoclaw-user-*` skills.
 
 ## Rationale
 

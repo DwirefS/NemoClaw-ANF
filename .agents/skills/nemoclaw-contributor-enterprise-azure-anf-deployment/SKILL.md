@@ -9,11 +9,11 @@ Start with the deployment specs and incubator manifests.
 
 ## Read Order
 
-1. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/09-deployment-workstreams.md`
-2. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/08-anf-storage-layout-and-dr.md`
-3. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/manifests/README.md`
-4. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/manifests/`
-5. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/profiles/`
+1. `incubator/enterprise-azure-anf/specs/09-deployment-workstreams.md`
+2. `incubator/enterprise-azure-anf/specs/08-anf-storage-layout-and-dr.md`
+3. `incubator/enterprise-azure-anf/manifests/README.md`
+4. `incubator/enterprise-azure-anf/manifests/`
+5. `incubator/enterprise-azure-anf/profiles/`
 
 ## Use This Skill When
 

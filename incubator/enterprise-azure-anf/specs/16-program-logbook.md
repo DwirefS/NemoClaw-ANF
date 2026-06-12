@@ -236,6 +236,23 @@ Why it mattered:
 - the repo now has a concrete preflight for the live PostgreSQL path instead of relying only on bootstrap and assumptions
 - the remaining gap is no longer “how do we verify the database contract,” but “run this harness against a real deployment”
 
+### 2026-06-12 — Project review, spec reconstruction, and first live end-to-end validation
+
+Completed:
+
+- reviewed the full repository with fresh eyes and recorded the findings in `incubator/enterprise-azure-anf/plans/2026-06-12-project-review-and-enhancement-plan.md`
+- discovered that specs 00-14 and 18 were never committed because a generic `specs/` rule in the root `.gitignore` silently swallowed them; scoped the rule with a negation and reconstructed all sixteen files from in-repo sources with explicit provenance notes
+- replaced the author-machine absolute paths (`/Users/dwirefs/...`) across incubator docs and contributor skills with repo-relative paths; annotated the corpus manifest paths as historical provenance
+- ran the retrieval bootstrap, verification harness, and a new end-to-end stack validation against a real PostgreSQL 16 deployment with pgvector 0.8.2 for the first time
+- fixed the four live-path defects this exposed (recorded below) and landed ACL-aware retrieval filtering, migration ledger tracking, duplicate-ingestion protection, and a CI e2e workflow
+- brought the retrieval service under the root Biome lint and format scope
+
+Why it mattered:
+
+- the retrieval path moved from "implemented but never executed" to "proven end to end against a live database, locally and in CI"
+- the highest-risk blocked item (ACL-aware retrieval) now has a working metadata model and enforcement path
+- the program's written record (specs, skills, corpus) is portable and complete for the first time
+
 ## Conflict And Resolution Record
 
 Conflict and resolution record for this program:
@@ -301,3 +318,57 @@ Resolution:
 
 - performed the `RETRIEVAL_API_DATABASE_URL` check before loading `pg`
 - deferred the `pg` import until after the DSN contract is present so the failure mode stays truthful and operator-friendly
+
+### Committed spec set versus gitignore scratch rule
+
+Conflict:
+
+- the incubator README, skills, and tests all referenced a nineteen-file spec set, but only specs 15-17 existed in the repository
+- the root `.gitignore` contains a generic `specs/` scratch rule that silently excluded the incubator spec directory, so the original files were lost on the author's machine
+
+Resolution:
+
+- added a scoped negation (`!incubator/enterprise-azure-anf/specs/`) so the incubator specs are repo-owned
+- reconstructed specs 00-14 and 18 from the corpus derivatives, ADRs, profiles, manifests, runbooks, diagrams, site content, and control surfaces, each with an explicit provenance section
+
+### Declared embedding dimension versus default model and index limits
+
+Conflict:
+
+- the schema declared `embedding vector(3072)` while the default embedding model (`nvidia/nv-embedqa-e5-v5`) emits 1024 dimensions
+- pgvector rejects HNSW indexes on `vector` columns above 2000 dimensions, so the migration failed against a real database (`hnswbuild.c` InitBuildState error captured live)
+
+Resolution:
+
+- changed the column to `vector(1024)` to match the default model and documented the model-dimension coupling and the `halfvec` strategy required for larger models
+
+### Documented entrypoints versus strip-types module resolution
+
+Conflict:
+
+- `npm start` and `npm run bootstrap` run TypeScript through `node --experimental-strip-types`, which requires explicit `.ts` extensions on relative imports
+- every relative import in the package was extensionless, so the documented entrypoints had never been runnable; only bundler-based tests passed
+
+Resolution:
+
+- added explicit `.ts` extensions to all relative imports and validated both entrypoints against the live database
+
+### Parameter encoding versus pgvector literal form
+
+Conflict:
+
+- the TypeScript backend passed the query embedding as a JavaScript array and the Python writer passed a list, which node-postgres and psycopg encode as PostgreSQL array literals (`{...}`); the `vector` type requires the `[...]` literal form
+
+Resolution:
+
+- introduced `toVectorLiteral` with a `$1::vector` cast in the query plan, and JSON-encoded embeddings with a `%s::vector` cast in the ingestion writer
+
+### Verification harness index names versus migration index names
+
+Conflict:
+
+- `verify-live-postgres.mjs` checked for `document_chunks_embedding_idx` and `document_chunks_fts_idx`, but the migration creates `document_chunks_embedding_hnsw_idx` and `document_chunks_tsv_gin_idx`, so the harness could never pass
+
+Resolution:
+
+- aligned the harness to the real index names and added the new ACL index to the expected set
