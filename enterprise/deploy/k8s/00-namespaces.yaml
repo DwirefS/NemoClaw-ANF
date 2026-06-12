@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# NemoMaxxing namespaces. The name=<namespace> labels back the namespace
+# selectors used by the network policies in this bundle.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: inference
+      labels:
+        name: inference
+  - apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: data-plane
+      labels:
+        name: data-plane
+  - apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: ingestion
+      labels:
+        name: ingestion
+  - apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: agents
+      labels:
+        name: agents
+  - apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: console
+      labels:
+        name: console

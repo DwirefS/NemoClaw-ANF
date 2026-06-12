@@ -1,0 +1,148 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Retrieval API, adapted from
+# incubator/enterprise-azure-anf/manifests/retrieval-api.yaml plus the
+# bootstrap and verify jobs from retrieval-bootstrap-job.yaml and
+# retrieval-postgres-verify-job.yaml.
+#
+# Ordering (enforced by scripts/03-deploy-stack.sh, kept visible via the
+# nemo.claw.ai/bootstrap-job annotation in lieu of initContainers):
+#   1. retrieval-bootstrap job (applies sql/ migrations, npm run bootstrap)
+#   2. retrieval-postgres-verify job (vector extension, document_chunks,
+#      expected indexes) — deployment must not serve a database that fails this
+#   3. retrieval-api deployment
+#
+# Env contract from enterprise/services/retrieval-api/README.md and
+# src/config.ts: RETRIEVAL_API_BACKEND=pgvector, RETRIEVAL_API_DATABASE_URL,
+# EMBEDDING_ENDPOINT, RERANK_ENDPOINT.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      # Bound to the Azure user-assigned identity by the federated credential
+      # in azure/modules/keyvault.bicep (Workload Identity).
+      name: retrieval-api
+      namespace: data-plane
+      labels:
+        azure.workload.identity/use: "true"
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: retrieval-bootstrap
+      namespace: data-plane
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: bootstrap
+              image: ghcr.io/dwirefs/nemoclaw-anf/retrieval-api:dev
+              command: ["sh", "-lc", "npm run bootstrap"]
+              env:
+                - name: RETRIEVAL_API_DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: retrieval-api-secrets
+                      key: postgres-dsn
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: retrieval-postgres-verify
+      namespace: data-plane
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: verify-postgres
+              image: ghcr.io/dwirefs/nemoclaw-anf/retrieval-api:dev
+              command: ["sh", "-lc", "npm run verify:postgres"]
+              env:
+                - name: RETRIEVAL_API_DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: retrieval-api-secrets
+                      key: postgres-dsn
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: retrieval-api
+      namespace: data-plane
+      annotations:
+        nemo.claw.ai/bootstrap-job: retrieval-bootstrap
+        nemo.claw.ai/verify-job: retrieval-postgres-verify
+    spec:
+      # Run the retrieval bootstrap and verify jobs before this deployment
+      # targets a fresh PostgreSQL instance.
+      replicas: 2
+      selector:
+        matchLabels:
+          app: retrieval-api
+      template:
+        metadata:
+          labels:
+            app: retrieval-api
+            azure.workload.identity/use: "true"
+        spec:
+          serviceAccountName: retrieval-api
+          containers:
+            - name: retrieval-api
+              image: ghcr.io/dwirefs/nemoclaw-anf/retrieval-api:dev
+              ports:
+                - containerPort: 8080
+              env:
+                - name: RETRIEVAL_API_BACKEND
+                  value: pgvector
+                - name: RETRIEVAL_API_DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: retrieval-api-secrets
+                      key: postgres-dsn
+                - name: EMBEDDING_ENDPOINT
+                  value: http://nemo-embedder.inference.svc.cluster.local:8000
+                - name: RERANK_ENDPOINT
+                  value: http://nemo-reranker.inference.svc.cluster.local:8000
+              readinessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8080
+                initialDelaySeconds: 5
+                periodSeconds: 10
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: retrieval-api
+      namespace: data-plane
+    spec:
+      selector:
+        app: retrieval-api
+      ports:
+        - name: http
+          port: 8080
+          targetPort: 8080
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: retrieval-api-ingress
+      namespace: data-plane
+    spec:
+      podSelector:
+        matchLabels:
+          app: retrieval-api
+      policyTypes: [Ingress]
+      ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: agents
+            - namespaceSelector:
+                matchLabels:
+                  name: ingestion
+            - namespaceSelector:
+                matchLabels:
+                  name: console

@@ -1,0 +1,117 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# NemoClaw worker tier, adapted from
+# incubator/enterprise-azure-anf/manifests/nemoclaw-worker-tier.yaml.
+# Persistent agent state lives on the agent-workspace ANF volume
+# (anf-premium-rwx) so workspace files (soul.md, user.md, memory) survive
+# sandbox rebuilds and node replacement. Workers schedule on the cpu-worker
+# AKS pool (azure/modules/aks.bicep).
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: agent-workspace
+      namespace: agents
+    spec:
+      # Backed by the agent-workspace ANF volume role from spec 08; RWX so a
+      # future multi-replica worker tier can share or partition the workspace.
+      accessModes: ["ReadWriteMany"]
+      storageClassName: anf-premium-rwx
+      resources:
+        requests:
+          storage: 1Ti
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: nemoclaw-worker-tier-bootstrap
+      namespace: agents
+    data:
+      enterprise.env: |
+        NEMOCLAW_RETRIEVAL_API=http://retrieval-api.data-plane.svc.cluster.local:8080
+        NEMOCLAW_POLICY_PROFILE=enterprise-hybrid
+        NEMOCLAW_WORKSPACE_DIR=/var/lib/nemoclaw/workspace
+      cloud-init.yaml: |
+        #cloud-config
+        package_update: true
+        packages:
+          - docker.io
+          - jq
+        write_files:
+          - path: /etc/nemoclaw/enterprise.env
+            permissions: "0640"
+            content: |
+              NEMOCLAW_RETRIEVAL_API=http://retrieval-api.data-plane.svc.cluster.local:8080
+              NEMOCLAW_POLICY_PROFILE=enterprise-hybrid
+              NEMOCLAW_WORKSPACE_DIR=/var/lib/nemoclaw/workspace
+          - path: /etc/systemd/system/nemoclaw-enterprise.service
+            permissions: "0644"
+            content: |
+              [Unit]
+              Description=NemoClaw Enterprise Worker
+              After=docker.service network-online.target
+
+              [Service]
+              EnvironmentFile=/etc/nemoclaw/enterprise.env
+              ExecStart=/usr/local/bin/nemoclaw launch --profile enterprise-hybrid
+              Restart=always
+
+              [Install]
+              WantedBy=multi-user.target
+        runcmd:
+          - systemctl daemon-reload
+          - systemctl enable nemoclaw-enterprise.service
+  - apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: nemoclaw-worker
+      namespace: agents
+    spec:
+      serviceName: nemoclaw-worker
+      replicas: 1
+      selector:
+        matchLabels:
+          app: nemoclaw-worker
+      template:
+        metadata:
+          labels:
+            app: nemoclaw-worker
+        spec:
+          nodeSelector:
+            nemomaxxing.nvidia.com/pool: cpu-worker
+          containers:
+            - name: nemoclaw-worker
+              image: ghcr.io/dwirefs/nemoclaw-anf/nemoclaw-worker:dev
+              envFrom:
+                - configMapRef:
+                    name: nemoclaw-worker-tier-bootstrap
+                    optional: true
+              env:
+                - name: NEMOCLAW_RETRIEVAL_API
+                  value: http://retrieval-api.data-plane.svc.cluster.local:8080
+                - name: NEMOCLAW_POLICY_PROFILE
+                  value: enterprise-hybrid
+                - name: NEMOCLAW_WORKSPACE_DIR
+                  value: /var/lib/nemoclaw/workspace
+              volumeMounts:
+                - name: agent-workspace
+                  mountPath: /var/lib/nemoclaw/workspace
+          volumes:
+            - name: agent-workspace
+              persistentVolumeClaim:
+                claimName: agent-workspace
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: nemoclaw-worker
+      namespace: agents
+    spec:
+      clusterIP: None
+      selector:
+        app: nemoclaw-worker
+      ports:
+        - name: http
+          port: 8080
+          targetPort: 8080
