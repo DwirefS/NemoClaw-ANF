@@ -23,6 +23,7 @@ describe("enterprise engineering tracker", () => {
     expect(tracker).toContain("| Hybrid baseline topology | `validated` |");
     expect(tracker).toContain("| Retrieval API boundary | `validated` |");
     expect(tracker).toContain("| PostgreSQL plus pgvector retrieval store | `custom-build-required` |");
-    expect(tracker).toContain("| ACL-aware retrieval filtering | `blocked` |");
+    expect(tracker).toContain("| ACL-aware retrieval filtering | `custom-build-required` |");
+    expect(tracker).toContain("| Live PostgreSQL bootstrap from service config | `validated` |");
   });
 });
