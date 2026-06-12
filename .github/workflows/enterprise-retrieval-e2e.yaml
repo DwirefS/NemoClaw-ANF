@@ -54,3 +54,6 @@ jobs:
         run: npm run verify:postgres
       - name: Run end-to-end local stack validation
         run: npm run e2e:local
+      - name: Run console end-to-end validation
+        working-directory: enterprise/services/console
+        run: npm run e2e:local

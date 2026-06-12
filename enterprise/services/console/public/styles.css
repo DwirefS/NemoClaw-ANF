@@ -1,0 +1,246 @@
+/* SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+:root {
+  --bg: #0c1116;
+  --panel: #131a22;
+  --line: #1f2a36;
+  --text: #d8e1ea;
+  --muted: #8294a6;
+  --green: #76b900;
+  --blue: #4aa3ff;
+  --red: #ff6b6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mark {
+  width: 14px;
+  height: 14px;
+  background: var(--green);
+  border-radius: 3px;
+  box-shadow: 0 0 12px var(--green);
+}
+
+h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.tag,
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.model {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--green);
+  border: 1px solid var(--line);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.controls {
+  display: flex;
+  gap: 18px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 230px;
+}
+
+select,
+input,
+button {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  padding: 16px 22px;
+  flex: 1;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+}
+
+.panel h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 2px;
+}
+
+.msg {
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.msg.user {
+  background: #18222d;
+  border: 1px solid var(--line);
+  align-self: flex-end;
+  max-width: 85%;
+}
+
+.msg.assistant {
+  background: #101820;
+  border: 1px solid #234;
+  align-self: flex-start;
+  max-width: 95%;
+}
+
+.msg.error {
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+.msg .meta {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+#chat-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#chat-input {
+  flex: 1;
+}
+
+button {
+  background: var(--green);
+  color: #06130a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.policy-box {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  background: #101820;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+
+.results-box {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--blue);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.result.restricted {
+  border-left-color: var(--red);
+}
+
+.result .title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.result .badges {
+  margin: 4px 0;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-right: 6px;
+  color: var(--muted);
+}
+
+footer {
+  padding: 10px 22px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+}

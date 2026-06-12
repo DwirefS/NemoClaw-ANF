@@ -1,0 +1,67 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NemoMaxxing Console</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="mark"></span>
+        <h1>NemoMaxxing Console</h1>
+        <span class="tag">Azure NetApp Files · NVIDIA NIM · pgvector</span>
+      </div>
+      <div class="model" id="model-badge">model: …</div>
+    </header>
+
+    <section class="controls">
+      <label>
+        Role
+        <select id="role">
+          <option value="field-agent">field-agent (low trust · sanitized-only)</option>
+          <option value="vault-agent">vault-agent (high trust · restricted-enterprise)</option>
+        </select>
+      </label>
+      <label>
+        Principals <span class="hint">(vault-agent only, comma-separated)</span>
+        <input id="principals" placeholder="group:supply-chain, user:alice" />
+      </label>
+      <label>
+        Collections <span class="hint">(optional)</span>
+        <input id="collections" placeholder="enterprise-public, enterprise-sensitive" />
+      </label>
+    </section>
+
+    <main>
+      <section class="panel">
+        <h2>Grounded Chat</h2>
+        <div id="chat-log" class="chat-log"></div>
+        <form id="chat-form">
+          <input id="chat-input" placeholder="Ask the enterprise knowledge base…" autocomplete="off" />
+          <button type="submit">Send</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Retrieval Inspector</h2>
+        <p class="hint">
+          Shows exactly what the retrieval boundary returned for the last request: policy decisions,
+          denied collections, and which ACL-restricted chunks were visible.
+        </p>
+        <div id="policy-box" class="policy-box">No request yet.</div>
+        <div id="results-box" class="results-box"></div>
+      </section>
+    </main>
+
+    <footer>
+      NemoMaxxing is a community project built on NVIDIA NemoClaw. Not an official NVIDIA, Microsoft,
+      or NetApp product.
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

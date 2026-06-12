@@ -1,0 +1,15 @@
+{
+  "name": "@nemoclaw-enterprise/console",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "NemoMaxxing console: RAG-grounded chat and retrieval inspector for the Enterprise Azure ANF overlay",
+  "main": "./src/index.ts",
+  "scripts": {
+    "start": "node --experimental-strip-types ./src/index.ts",
+    "e2e:local": "node ./scripts/e2e-console.mjs"
+  },
+  "engines": {
+    "node": ">=22.16.0"
+  }
+}
