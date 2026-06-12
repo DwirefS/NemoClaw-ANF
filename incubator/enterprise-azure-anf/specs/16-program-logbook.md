@@ -372,3 +372,19 @@ Conflict:
 Resolution:
 
 - aligned the harness to the real index names and added the new ACL index to the expected set
+
+### 2026-06-12 — NemoMaxxing deployable stack, console, and agent skills
+
+Completed:
+
+- built the NemoMaxxing console (`enterprise/services/console/`): grounded chat through the retrieval boundary, retrieval inspector exposing policy and ACL decisions, dependency-free server, unit tests, and a live e2e validated against the real PostgreSQL plus pgvector stack
+- created the deployable infrastructure tree (`enterprise/deploy/`): Bicep for VNet, ANF account/pools/volumes, AKS GPU cluster, and Key Vault; numbered Kubernetes manifests for the data plane, RAG NIMs, Nemotron and multi-engine Gemma inference, nv-ingest, retrieval API, console, and worker tier; staged deploy and validation scripts
+- authored four `nemomaxxing-*` agent skills so an agent given this repository can deploy and operate the platform end to end, and added them to the skills guide
+- extended the CI e2e workflow to validate the console against the pgvector service container
+- recorded the wave plan in `incubator/enterprise-azure-anf/plans/2026-06-12-nemomaxxing-deployable-stack.md`
+
+Why it mattered:
+
+- the overlay now has a human-facing surface that makes role and ACL enforcement visible instead of implied
+- the path from "validated locally" to "running on Azure" is now encoded as reviewable infrastructure code and agent-executable skills rather than tribal knowledge
+- the honest boundary is explicit: cloud assets are `assumed` until the first real subscription deployment, which must be logged as the next validation event

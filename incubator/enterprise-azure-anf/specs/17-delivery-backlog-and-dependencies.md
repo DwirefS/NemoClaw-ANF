@@ -96,3 +96,14 @@ Dependency notes for this backlog:
 4. re-run the bootstrap, verification, and e2e harness on the target AKS plus ANF deployment
 5. benchmark PostgreSQL on ANF tiers (separate WAL and data volumes, hard NFS mounts) and tune the storage assumptions
 6. wire NeMo Guardrails and OpenTelemetry GenAI instrumentation into the retrieval path
+
+## NemoMaxxing Wave Additions (2026-06-12)
+
+| Work Item | Status | Depends On | Notes |
+|---|---|---|---|
+| console UI with grounded chat and ACL inspector | `done` | retrieval API, ACL filtering | live e2e validated locally and in CI |
+| deployable Azure infrastructure tree (Bicep, k8s, scripts) | `done` | incubator manifests, spec 08/09 | structurally tested; cloud application still pending |
+| nemomaxxing agent skills | `done` | deploy tree, console, retrieval harnesses | four skills plus guide integration and tests |
+| first real Azure subscription deployment | `next` | deploy tree, GPU quota, NGC key | this run is the validation event for everything marked assumed |
+| live Nemotron/Gemma chat through the console | `next` | deployed NIMService or vLLM/SGLang endpoints | console already speaks the OpenAI-compatible contract |
+| authenticating gateway for principals (Entra ID) | `blocked` | identity strategy | precondition for multi-user exposure of console and retrieval API |
