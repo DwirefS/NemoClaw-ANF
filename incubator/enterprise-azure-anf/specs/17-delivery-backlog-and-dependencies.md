@@ -38,7 +38,7 @@ This backlog tracks what remains, what depends on what, and what should be worke
 | duplicate-ingestion protection | `done` | stable writer contract | content-addressed chunk ids (SHA-256 of source and content) landed 2026-06-12 in the PostgreSQL writer |
 | PostgreSQL benchmark and ANF storage tuning | `next` | live DB path, ANF volumes | validates storage-class assumptions |
 | ACL-aware retrieval filtering | `in-progress` | identity model, permission ingestion, metadata model | metadata model and retrieval-time enforcement landed 2026-06-12 and are e2e-validated; identity-provider mapping remains the open half |
-| identity mapping for asserted principals | `blocked` | Azure identity strategy (Entra groups or workload identity) | the retrieval API currently trusts the caller's asserted principals; an authenticating gateway must own this mapping |
+| identity mapping for asserted principals | `done` | secure gateway | the gateway now derives principals from authenticated identity (static tokens or RS256 JWT with groups claim); callers can no longer assert principals; live Entra ID tenant validation tracked below |
 | permission capture during ingestion | `in-progress` | ACL-aware retrieval design | the writer persists `acl_principals` supplied in chunk metadata; automatic capture from ANF share ACLs is still open |
 | Azure-native secret path alignment | `blocked` | worker tier bootstrap decision, AKS secret model | current design is partial |
 | agent memory and restore validation on ANF | `later` | worker tier runtime hardening | not yet exercised against real runtime state |
@@ -106,4 +106,6 @@ Dependency notes for this backlog:
 | nemomaxxing agent skills | `done` | deploy tree, console, retrieval harnesses | four skills plus guide integration and tests |
 | first real Azure subscription deployment | `next` | deploy tree, GPU quota, NGC key | this run is the validation event for everything marked assumed |
 | live Nemotron/Gemma chat through the console | `next` | deployed NIMService or vLLM/SGLang endpoints | console already speaks the OpenAI-compatible contract |
-| authenticating gateway for principals (Entra ID) | `blocked` | identity strategy | precondition for multi-user exposure of console and retrieval API |
+| authenticating gateway for principals | `done` | identity strategy | implemented with static and jwt modes, redaction, audit, rate limiting; e2e-validated locally and in CI |
+| gateway jwt mode against a live Entra ID tenant | `next` | Azure tenant, app registration, group claims | the RS256/JWKS path is unit-tested with generated keys; a real tenant run is the remaining proof |
+| MCP bridge exercised from a real MCP client | `next` | worker tier deployment, OpenClaw MCP config | bridge is protocol-tested and live-e2e-tested; a real agent client closes the loop |

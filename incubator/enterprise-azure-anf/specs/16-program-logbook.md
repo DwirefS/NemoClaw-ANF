@@ -388,3 +388,19 @@ Why it mattered:
 - the overlay now has a human-facing surface that makes role and ACL enforcement visible instead of implied
 - the path from "validated locally" to "running on Azure" is now encoded as reviewable infrastructure code and agent-executable skills rather than tribal knowledge
 - the honest boundary is explicit: cloud assets are `assumed` until the first real subscription deployment, which must be logged as the next validation event
+
+### 2026-07-03 — Secure gateway, MCP bridge, and production hardening
+
+Completed:
+
+- built the secure gateway (`enterprise/services/gateway/`) realizing the whitepaper's policy-enforcement seam: bearer authentication (static tokens plus RS256 JWT against a JWKS endpoint for Entra ID-style identity), identity-derived principals (body-supplied principals are discarded, closing the trust gap that had been the top blocked security item), redaction and masking of sanitized-only responses, JSONL audit trail carrying query hashes instead of raw queries, per-subject rate limiting, and Prometheus metrics
+- built the MCP-to-ANF bridge (`enterprise/services/mcp-bridge/`) realizing the whitepaper's "Universal Translator": a dependency-free stdio MCP server exposing `retrieval_search` and `retrieval_health` tools over the gateway, with principals deliberately excluded from tool arguments
+- hardened the retrieval API for production: liveness (`/healthz`) split from readiness (`/readyz` with backend probe), request body caps, and graceful SIGTERM draining across all services
+- wired the console through the gateway (`CONSOLE_RETRIEVAL_TOKEN`), added the gateway deployment manifest with a NetworkPolicy that makes the retrieval API reachable only from the gateway, gateway secret creation in the cluster bootstrap script, and the stage-55 apply step
+- validated everything live against real PostgreSQL plus pgvector: nine gateway e2e checks (401/403 paths, identity-derived ACL unlock with no principals in the body, anti-escalation, redaction of emails and phone numbers, rate limiting, audit integrity, metrics) and five MCP bridge e2e checks; CI now runs retrieval, console, gateway, and bridge e2e suites against the pgvector service container
+
+Why it mattered:
+
+- the two largest promised-but-missing architecture links from the whitepaper (secure gateway, MCP bridge) now exist as tested code instead of diagrams
+- ACL enforcement became authenticated enforcement: who may assert which principals is now decided by verified identity, not by the caller
+- the platform's human surface (console), agent surface (MCP), and service surface (HTTP) all pass through one audited, redacting, rate-limited boundary
