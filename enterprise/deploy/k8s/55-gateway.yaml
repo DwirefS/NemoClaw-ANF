@@ -1,0 +1,92 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Secure gateway in front of the retrieval API (enterprise/services/gateway/):
+# authentication, identity-derived principals, redaction, audit logging, and
+# rate limiting. Consumers (console, worker tier, MCP bridge) talk to the
+# gateway; the retrieval API itself only accepts traffic from the gateway
+# (see the NetworkPolicy below).
+#
+# Production: switch GATEWAY_AUTH_MODE to jwt and set the Entra ID issuer,
+# audience, and JWKS URL. Static tokens remain for machine identities until
+# federated workload identity is wired end to end.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: retrieval-gateway
+      namespace: data-plane
+    spec:
+      replicas: 2
+      selector:
+        matchLabels:
+          app: retrieval-gateway
+      template:
+        metadata:
+          labels:
+            app: retrieval-gateway
+        spec:
+          containers:
+            - name: gateway
+              image: nemomaxxing/gateway:dev
+              ports:
+                - containerPort: 8095
+              env:
+                - name: RETRIEVAL_API_URL
+                  value: http://retrieval-api.data-plane.svc.cluster.local:8080
+                - name: GATEWAY_AUTH_MODE
+                  value: static
+                - name: GATEWAY_STATIC_TOKENS
+                  valueFrom:
+                    secretKeyRef:
+                      name: gateway-static-tokens
+                      key: tokens.json
+                - name: GATEWAY_RATE_LIMIT_PER_MINUTE
+                  value: "120"
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8095
+                initialDelaySeconds: 5
+                periodSeconds: 10
+              readinessProbe:
+                httpGet:
+                  path: /readyz
+                  port: 8095
+                initialDelaySeconds: 5
+                periodSeconds: 10
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: retrieval-gateway
+      namespace: data-plane
+    spec:
+      selector:
+        app: retrieval-gateway
+      ports:
+        - name: http
+          port: 8095
+          targetPort: 8095
+  # The retrieval API is only reachable from the gateway: consumers cannot
+  # bypass authentication, redaction, or audit by calling it directly.
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: retrieval-api-only-from-gateway
+      namespace: data-plane
+    spec:
+      podSelector:
+        matchLabels:
+          app: retrieval-api
+      policyTypes:
+        - Ingress
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  app: retrieval-gateway
+          ports:
+            - protocol: TCP
+              port: 8080

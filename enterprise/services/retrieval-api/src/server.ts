@@ -76,10 +76,18 @@ function parseRequestBody(rawBody: string): RetrievalRequestBody | null {
   }
 }
 
-async function readBody(request: http.IncomingMessage): Promise<string> {
+const MAX_BODY_BYTES = 64 * 1024;
+
+async function readBody(request: http.IncomingMessage): Promise<string | null> {
   const chunks: Buffer[] = [];
+  let total = 0;
   for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    total += buffer.length;
+    if (total > MAX_BODY_BYTES) {
+      return null;
+    }
+    chunks.push(buffer);
   }
   return Buffer.concat(chunks).toString("utf8");
 }
@@ -87,13 +95,32 @@ async function readBody(request: http.IncomingMessage): Promise<string> {
 export function createRetrievalApiServer(options: CreateServerOptions): RetrievalApiServer {
   const server = http.createServer(async (request, response) => {
     if (request.method === "GET" && request.url === "/healthz") {
-      const health = await options.backend.health();
-      sendJson(response, 200, { ...health, service: options.config.serviceName });
+      // Liveness: the process is up and serving. Kept dependency-free so a
+      // database outage surfaces as not-ready rather than a restart loop.
+      sendJson(response, 200, { ok: true, service: options.config.serviceName });
+      return;
+    }
+
+    if (request.method === "GET" && request.url === "/readyz") {
+      try {
+        const health = await options.backend.health();
+        sendJson(response, 200, { ...health, service: options.config.serviceName });
+      } catch (error) {
+        sendJson(response, 503, {
+          ok: false,
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
       return;
     }
 
     if (request.method === "POST" && request.url === "/v1/query") {
-      const body = parseRequestBody(await readBody(request));
+      const rawBody = await readBody(request);
+      if (rawBody === null) {
+        sendJson(response, 413, { error: "invalid_request", message: "Request body too large." });
+        return;
+      }
+      const body = parseRequestBody(rawBody);
       if (!body) {
         const payload: ErrorResponseBody = {
           error: "invalid_request",

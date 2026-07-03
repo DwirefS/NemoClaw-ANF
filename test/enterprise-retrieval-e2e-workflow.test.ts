@@ -23,6 +23,8 @@ describe("enterprise retrieval e2e workflow", () => {
     expect(yaml).toContain("npm run verify:postgres");
     expect(yaml).toContain("npm run e2e:local");
     expect(yaml).toContain("enterprise/services/console");
+    expect(yaml).toContain("enterprise/services/gateway");
+    expect(yaml).toContain("enterprise/services/mcp-bridge");
   });
 
   it("ships an e2e script that proves role and ACL enforcement over HTTP", () => {

@@ -101,9 +101,13 @@ export function createConsoleServer(options: CreateConsoleServerOptions): Consol
   const { config } = options;
 
   async function queryRetrieval(body: ConsoleChatRequestBody): Promise<Response> {
+    const headers: Record<string, string> = { "content-type": "application/json" };
+    if (config.retrievalToken !== "") {
+      headers.authorization = `Bearer ${config.retrievalToken}`;
+    }
     return fetchImpl(`${config.retrievalApiUrl.replace(/\/$/, "")}/v1/query`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers,
       body: JSON.stringify({
         query: body.query,
         role: body.role,

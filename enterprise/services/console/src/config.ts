@@ -5,6 +5,8 @@ export interface ConsoleConfig {
   host: string;
   port: number;
   retrievalApiUrl: string;
+  /** Bearer token attached to retrieval calls when routed through the gateway. */
+  retrievalToken: string;
   chatEndpoint: string;
   chatModel: string;
   serviceName: string;
@@ -17,6 +19,7 @@ export function loadConsoleConfig(env: NodeJS.ProcessEnv = process.env): Console
     port: Number.isFinite(rawPort) ? rawPort : 8090,
     retrievalApiUrl:
       env.RETRIEVAL_API_URL || "http://retrieval-api.data-plane.svc.cluster.local:8080",
+    retrievalToken: env.CONSOLE_RETRIEVAL_TOKEN || "",
     chatEndpoint: env.CHAT_ENDPOINT || "http://nemotron-llm.inference.svc.cluster.local:8000",
     chatModel: env.CHAT_MODEL || "nvidia/llama-3.1-nemotron-ultra-253b-v1",
     serviceName: env.CONSOLE_SERVICE_NAME || "nemomaxxing-console",

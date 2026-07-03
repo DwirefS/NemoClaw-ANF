@@ -145,7 +145,7 @@ describe("enterprise deploy assets (NemoMaxxing)", () => {
       ]),
     );
     expect(env.RETRIEVAL_API_URL).toBe(
-      "http://retrieval-api.data-plane.svc.cluster.local:8080",
+      "http://retrieval-gateway.data-plane.svc.cluster.local:8095",
     );
     expect(env.CHAT_ENDPOINT).toBe("http://nemotron-llm.inference.svc.cluster.local:8000");
     expect(env.CHAT_MODEL).toBe("nvidia/llama-3.1-nemotron-ultra-253b-v1");
@@ -164,6 +164,22 @@ describe("enterprise deploy assets (NemoMaxxing)", () => {
     expect(jobNames).toEqual(
       expect.arrayContaining(["retrieval-bootstrap", "retrieval-postgres-verify"]),
     );
+  });
+
+  it("gates the retrieval API behind the secure gateway", () => {
+    const manifest = read("k8s/55-gateway.yaml");
+    expect(manifest).toContain("retrieval-gateway");
+    expect(manifest).toContain("GATEWAY_AUTH_MODE");
+    expect(manifest).toContain("gateway-static-tokens");
+    expect(manifest).toContain("kind: NetworkPolicy");
+    expect(manifest).toContain("retrieval-api-only-from-gateway");
+
+    const consoleManifest = read("k8s/60-console.yaml");
+    expect(consoleManifest).toContain("CONSOLE_RETRIEVAL_TOKEN");
+    expect(consoleManifest).toContain("retrieval-gateway.data-plane.svc.cluster.local:8095");
+
+    const deployScript = read("scripts/03-deploy-stack.sh");
+    expect(deployScript).toContain("55-gateway.yaml");
   });
 
   it("includes the Bicep tree with the key Azure resource types", () => {

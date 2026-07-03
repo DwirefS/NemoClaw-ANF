@@ -82,6 +82,10 @@ fi
 
 kubectl rollout status deployment/retrieval-api --namespace data-plane --timeout="${WAIT_TIMEOUT}"
 
+echo "==> Stage 55: secure gateway (auth, redaction, audit)"
+apply 55-gateway.yaml
+kubectl rollout status deployment/retrieval-gateway --namespace data-plane --timeout="${WAIT_TIMEOUT}"
+
 echo "==> Stage 60: console"
 apply 60-console.yaml
 kubectl rollout status deployment/console --namespace console --timeout="${WAIT_TIMEOUT}"

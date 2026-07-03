@@ -29,8 +29,15 @@ items:
               ports:
                 - containerPort: 8090
               env:
+                # Routed through the secure gateway (55-gateway.yaml); the
+                # retrieval API's NetworkPolicy blocks direct access.
                 - name: RETRIEVAL_API_URL
-                  value: http://retrieval-api.data-plane.svc.cluster.local:8080
+                  value: http://retrieval-gateway.data-plane.svc.cluster.local:8095
+                - name: CONSOLE_RETRIEVAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: console-gateway-token
+                      key: token
                 - name: CHAT_ENDPOINT
                   value: http://nemotron-llm.inference.svc.cluster.local:8000
                 - name: CHAT_MODEL

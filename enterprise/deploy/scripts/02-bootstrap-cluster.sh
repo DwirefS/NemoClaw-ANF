@@ -86,6 +86,27 @@ else
   echo "WARNING: HF_TOKEN not set; skipping hf-token-secret (k8s/32 and k8s/33 will not start)."
 fi
 
+echo "==> Creating gateway secrets (values not echoed)"
+# GATEWAY_TOKENS_JSON: static token map for the secure gateway, e.g.
+# {"<token>":{"subject":"svc:console","allowedRoles":["field-agent"],"principals":[]}}
+# CONSOLE_GATEWAY_TOKEN must be one of the keys in that map.
+if [[ -n "${GATEWAY_TOKENS_JSON:-}" ]]; then
+  kubectl create secret generic gateway-static-tokens \
+    --namespace data-plane \
+    --from-literal=tokens.json="${GATEWAY_TOKENS_JSON}" \
+    --dry-run=client -o yaml | kubectl apply -f -
+else
+  echo "WARNING: GATEWAY_TOKENS_JSON not set; skipping gateway-static-tokens (k8s/55 will not start)."
+fi
+if [[ -n "${CONSOLE_GATEWAY_TOKEN:-}" ]]; then
+  kubectl create secret generic console-gateway-token \
+    --namespace console \
+    --from-literal=token="${CONSOLE_GATEWAY_TOKEN}" \
+    --dry-run=client -o yaml | kubectl apply -f -
+else
+  echo "WARNING: CONSOLE_GATEWAY_TOKEN not set; skipping console-gateway-token (k8s/60 will not start)."
+fi
+
 echo "==> Creating PostgreSQL secrets (values not echoed)"
 POSTGRES_DSN="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-pgvector.data-plane.svc.cluster.local:5432/nemoclaw_rag"
 

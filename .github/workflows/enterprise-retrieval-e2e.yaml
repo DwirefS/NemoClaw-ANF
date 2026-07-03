@@ -57,3 +57,9 @@ jobs:
       - name: Run console end-to-end validation
         working-directory: enterprise/services/console
         run: npm run e2e:local
+      - name: Run secure gateway end-to-end validation
+        working-directory: enterprise/services/gateway
+        run: npm run e2e:local
+      - name: Run MCP bridge end-to-end validation
+        working-directory: enterprise/services/mcp-bridge
+        run: npm run e2e:local

@@ -51,6 +51,18 @@ describe("enterprise retrieval API", () => {
     });
   });
 
+  it("serves a readiness endpoint backed by the backend health probe", async () => {
+    const { baseUrl } = await startServer();
+
+    const response = await fetch(`${baseUrl}/readyz`);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      service: "retrieval-api-test",
+    });
+  });
+
   it("rejects malformed query requests", async () => {
     const { baseUrl } = await startServer();
 

@@ -13,6 +13,17 @@ async function main() {
     config,
   });
   await server.listen();
+  console.log(`${config.serviceName} listening on ${config.host}:${config.port}`);
+
+  const shutdown = (signal: string) => {
+    console.log(`${config.serviceName} received ${signal}, draining`);
+    server.close().then(
+      () => process.exit(0),
+      () => process.exit(1),
+    );
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 main().catch((error) => {
