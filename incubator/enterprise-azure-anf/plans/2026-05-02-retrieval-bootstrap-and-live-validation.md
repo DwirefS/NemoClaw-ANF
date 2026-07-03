@@ -15,14 +15,14 @@
 
 ## File Structure
 
-**Create**
+### Create
 
 - `incubator/enterprise-azure-anf/manifests/retrieval-bootstrap-job.yaml`
 - `enterprise/services/retrieval-api/scripts/smoke-bootstrap.mjs`
 - `test/enterprise-retrieval-bootstrap-job.test.ts`
 - `test/enterprise-retrieval-smoke-script.test.ts`
 
-**Modify**
+### Modify
 
 - `enterprise/services/retrieval-api/package.json`
 - `enterprise/services/retrieval-api/README.md`
@@ -36,6 +36,7 @@
 ### Task 1: Add a failing test for the deployment-time bootstrap job
 
 **Files:**
+
 - Create: `test/enterprise-retrieval-bootstrap-job.test.ts`
 - Create: `incubator/enterprise-azure-anf/manifests/retrieval-bootstrap-job.yaml`
 
@@ -118,6 +119,7 @@ git commit -m "feat(retrieval): add bootstrap job manifest"
 ### Task 2: Wire the retrieval package and deployment docs to the bootstrap flow
 
 **Files:**
+
 - Modify: `enterprise/services/retrieval-api/package.json`
 - Modify: `enterprise/services/retrieval-api/README.md`
 - Modify: `incubator/enterprise-azure-anf/manifests/retrieval-api.yaml`
@@ -164,7 +166,7 @@ Keep the package bootstrap script explicit and document the required deployment 
 }
 ```
 
-```md
+````md
 ## Database Bootstrap
 
 Run the bootstrap job before the retrieval API deployment points at a fresh PostgreSQL instance.
@@ -175,7 +177,8 @@ The bootstrap flow applies the SQL files under `sql/` through the package-owned 
 npm run build
 npm run bootstrap
 ```
-```
+
+````
 
 - [ ] **Step 4: Run the test to verify it passes**
 
@@ -193,6 +196,7 @@ git commit -m "docs(retrieval): document bootstrap sequencing"
 ### Task 3: Add a repo-owned smoke validation script for bootstrap readiness
 
 **Files:**
+
 - Create: `enterprise/services/retrieval-api/scripts/smoke-bootstrap.mjs`
 - Create: `test/enterprise-retrieval-smoke-script.test.ts`
 
@@ -271,6 +275,7 @@ git commit -m "feat(retrieval): add bootstrap smoke validation"
 ### Task 4: Update the program control surfaces and run the focused verification suite
 
 **Files:**
+
 - Modify: `incubator/enterprise-azure-anf/specs/15-engineering-tracker.md`
 - Modify: `incubator/enterprise-azure-anf/specs/16-program-logbook.md`
 - Modify: `incubator/enterprise-azure-anf/specs/17-delivery-backlog-and-dependencies.md`

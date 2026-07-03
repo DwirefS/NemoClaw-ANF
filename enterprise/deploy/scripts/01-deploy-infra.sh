@@ -47,10 +47,10 @@ az deployment sub create \
   --location "${LOCATION}" \
   --template-file "${BICEP_DIR}/main.bicep" \
   --parameters \
-    location="${LOCATION}" \
-    prefix="${PREFIX}" \
-    gpuVmSize="${GPU_VM_SIZE}" \
-    gpuNodeCount="${GPU_NODE_COUNT}"
+  location="${LOCATION}" \
+  prefix="${PREFIX}" \
+  gpuVmSize="${GPU_VM_SIZE}" \
+  gpuNodeCount="${GPU_NODE_COUNT}"
 
 echo "==> Validation gate"
 STATE="$(az deployment sub show --name "${DEPLOYMENT_NAME}" --query properties.provisioningState -o tsv)"

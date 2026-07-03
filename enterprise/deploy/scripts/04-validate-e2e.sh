@@ -32,6 +32,8 @@ record() {
 }
 
 PORT_FORWARD_PIDS=()
+# Invoked indirectly via the EXIT trap.
+# shellcheck disable=SC2317
 cleanup() {
   for pid in "${PORT_FORWARD_PIDS[@]:-}"; do
     kill "${pid}" 2>/dev/null || true

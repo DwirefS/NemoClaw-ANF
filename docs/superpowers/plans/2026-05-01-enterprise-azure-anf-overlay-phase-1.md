@@ -13,9 +13,10 @@
 
 ---
 
-### Task 1: Scaffold the enterprise overlay runtime surface
+## Task 1: Scaffold the enterprise overlay runtime surface
 
 **Files:**
+
 - Create: `enterprise/README.md`
 - Create: `enterprise/services/retrieval-api/README.md`
 - Create: `enterprise/services/retrieval-api/package.json`
@@ -31,9 +32,10 @@ Create a small enterprise overlay surface and a standalone package descriptor fo
 Run: `npx vitest run test/enterprise-azure-anf-incubator.test.ts`
 Expected: PASS
 
-### Task 2: Implement the retrieval API contract with failing tests first
+## Task 2: Implement the retrieval API contract with failing tests first
 
 **Files:**
+
 - Create: `test/enterprise-retrieval-api.test.ts`
 - Create: `enterprise/services/retrieval-api/src/contracts.ts`
 - Create: `enterprise/services/retrieval-api/src/profiles.ts`
@@ -46,6 +48,7 @@ Expected: PASS
 - [ ] **Step 1: Write the failing tests for health, query validation, and role-aware policy**
 
 Tests should cover:
+
 - `GET /healthz` returns `200`
 - `POST /v1/query` rejects malformed bodies with `400`
 - `field-agent` requests are constrained to sanitized corpora
@@ -60,6 +63,7 @@ Expected: FAIL because the retrieval API modules do not exist yet
 - [ ] **Step 3: Implement the minimal retrieval API**
 
 Implement:
+
 - a request and response contract
 - profile-derived policy enforcement
 - an injectable backend interface
@@ -71,9 +75,10 @@ Implement:
 Run: `npx vitest run test/enterprise-retrieval-api.test.ts`
 Expected: PASS
 
-### Task 3: Add pgvector-oriented query planning and deployment alignment
+## Task 3: Add pgvector-oriented query planning and deployment alignment
 
 **Files:**
+
 - Create: `test/enterprise-retrieval-query-plan.test.ts`
 - Create: `enterprise/services/retrieval-api/src/pgvector.ts`
 - Modify: `enterprise/services/retrieval-api/README.md`
@@ -82,6 +87,7 @@ Expected: PASS
 - [ ] **Step 1: Write the failing tests for query planning**
 
 Tests should cover:
+
 - generated query metadata for hybrid search
 - explicit denial of direct agent database access
 - inclusion of profile-limited collection filters
@@ -94,6 +100,7 @@ Expected: FAIL because the query planner does not exist yet
 - [ ] **Step 3: Implement the minimal pgvector query-planning module**
 
 Implement a pure query planner that:
+
 - builds the role-aware hybrid retrieval plan
 - emits SQL text plus bound values
 - keeps the database access boundary inside the service rather than the agent
@@ -103,14 +110,16 @@ Implement a pure query planner that:
 Run: `npx vitest run test/enterprise-retrieval-query-plan.test.ts`
 Expected: PASS
 
-### Task 4: Verify the overlay slice end to end
+## Task 4: Verify the overlay slice end to end
 
 **Files:**
+
 - Modify: `test/enterprise-azure-anf-incubator.test.ts`
 
 - [ ] **Step 1: Extend the incubator test to require the new runtime slice**
 
 Add assertions for:
+
 - `enterprise/services/retrieval-api/` existence
 - retrieval API package metadata
 - retrieval API README presence

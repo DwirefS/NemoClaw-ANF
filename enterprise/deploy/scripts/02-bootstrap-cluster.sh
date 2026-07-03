@@ -60,11 +60,14 @@ echo "==> Creating namespaces (required before secrets)"
 kubectl apply -f "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../k8s/00-namespaces.yaml"
 
 echo "==> Creating NGC secrets (values not echoed)"
-for ns in inference; do
+# Extend this list when other namespaces need NGC pull access.
+NGC_NAMESPACES=(inference)
+for ns in "${NGC_NAMESPACES[@]}"; do
+  # NGC requires the literal username $oauthtoken; it must not expand.
   kubectl create secret docker-registry ngc-secret \
     --namespace "${ns}" \
     --docker-server=nvcr.io \
-    --docker-username='$oauthtoken' \
+    --docker-username="\$oauthtoken" \
     --docker-password="${NGC_API_KEY}" \
     --dry-run=client -o yaml | kubectl apply -f -
   kubectl create secret generic ngc-api-secret \

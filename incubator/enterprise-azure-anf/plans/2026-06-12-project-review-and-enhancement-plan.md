@@ -78,24 +78,24 @@ Why this design: it mirrors the established permission-aware-RAG pattern (filter
 
 ### Wave B — Security completion
 
-4. Authenticating gateway in front of the retrieval API: Entra ID token validation, principal extraction, audit logging. This closes the identity-mapping gap and realizes the whitepaper's "secure gateway".
-5. Automatic ACL capture during ingestion from ANF share permissions (NFSv4 ACLs / SMB security descriptors).
-6. Key Vault CSI plus Workload Identity for AKS secrets; VM managed identity for the worker tier.
-7. NeMo Guardrails (now NIM Operator-managed) on the agent-facing path: input rail, retrieval rail against indirect prompt injection in retrieved chunks, output rail.
+1. Authenticating gateway in front of the retrieval API: Entra ID token validation, principal extraction, audit logging. This closes the identity-mapping gap and realizes the whitepaper's "secure gateway".
+2. Automatic ACL capture during ingestion from ANF share permissions (NFSv4 ACLs / SMB security descriptors).
+3. Key Vault CSI plus Workload Identity for AKS secrets; VM managed identity for the worker tier.
+4. NeMo Guardrails (now NIM Operator-managed) on the agent-facing path: input rail, retrieval rail against indirect prompt injection in retrieved chunks, output rail.
 
 ### Wave C — Ecosystem currency and capability growth
 
-8. Upgrade nv-ingest to `release/26.1.2` and add Parquet NA-sanitization in the worker.
-9. MCP server surface over the retrieval API (the whitepaper's "MCP-to-ANF bridge"): expose `retrieval.search` as an MCP tool so OpenClaw agents consume the boundary natively; instrument with the OpenTelemetry MCP semantic conventions.
-10. OpenTelemetry GenAI instrumentation in the retrieval API (experimental attribute set, internal-only until the spec stabilizes).
-11. Retrieval quality evaluation harness (RAGAS-style faithfulness and context precision) wired to the benchmarking runbook.
-12. ANF-backed agent memory tiers: snapshot-as-memory validation for workspace state, episodic memory in PostgreSQL, semantic memory in the existing vector store.
-13. Evaluate `halfvec` storage (50% footprint) and `hnsw.iterative_scan = relaxed_order` for ACL-filtered recall; evaluate VectorChord-BM25 as a native hybrid alternative.
+1. Upgrade nv-ingest to `release/26.1.2` and add Parquet NA-sanitization in the worker.
+2. MCP server surface over the retrieval API (the whitepaper's "MCP-to-ANF bridge"): expose `retrieval.search` as an MCP tool so OpenClaw agents consume the boundary natively; instrument with the OpenTelemetry MCP semantic conventions.
+3. OpenTelemetry GenAI instrumentation in the retrieval API (experimental attribute set, internal-only until the spec stabilizes).
+4. Retrieval quality evaluation harness (RAGAS-style faithfulness and context precision) wired to the benchmarking runbook.
+5. ANF-backed agent memory tiers: snapshot-as-memory validation for workspace state, episodic memory in PostgreSQL, semantic memory in the existing vector store.
+6. Evaluate `halfvec` storage (50% footprint) and `hnsw.iterative_scan = relaxed_order` for ACL-filtered recall; evaluate VectorChord-BM25 as a native hybrid alternative.
 
 ### Wave D — Productization
 
-14. Promote stable overlay docs through the promotion runbook into official docs once Wave A and B gates pass.
-15. CLI integration: `nemoclaw enterprise` command group for retrieval-stack provisioning and status (currently the overlay is invisible to the CLI).
+1. Promote stable overlay docs through the promotion runbook into official docs once Wave A and B gates pass.
+2. CLI integration: `nemoclaw enterprise` command group for retrieval-stack provisioning and status (currently the overlay is invisible to the CLI).
 
 ## Execution Record
 
