@@ -1,0 +1,15 @@
+{
+  "name": "@nemoclaw-enterprise/mcp-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "NemoMaxxing MCP-to-ANF bridge: Model Context Protocol tools over the enterprise retrieval boundary",
+  "main": "./src/index.ts",
+  "scripts": {
+    "start": "node --experimental-strip-types ./src/index.ts",
+    "e2e:local": "node ./scripts/e2e-mcp-bridge.mjs"
+  },
+  "engines": {
+    "node": ">=22.16.0"
+  }
+}
