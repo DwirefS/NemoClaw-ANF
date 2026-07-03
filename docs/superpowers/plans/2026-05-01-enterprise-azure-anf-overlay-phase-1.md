@@ -1,3 +1,9 @@
+---
+orphan: true
+title: "Enterprise Azure ANF Overlay Phase 1 Implementation Plan"
+description: "Internal implementation plan for the first enterprise Azure ANF overlay runtime slice. Not part of the user documentation tree."
+---
+
 <!-- SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
