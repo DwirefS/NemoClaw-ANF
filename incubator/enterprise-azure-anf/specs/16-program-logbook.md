@@ -404,3 +404,14 @@ Why it mattered:
 - the two largest promised-but-missing architecture links from the whitepaper (secure gateway, MCP bridge) now exist as tested code instead of diagrams
 - ACL enforcement became authenticated enforcement: who may assert which principals is now decided by verified identity, not by the caller
 - the platform's human surface (console), agent surface (MCP), and service surface (HTTP) all pass through one audited, redacting, rate-limited boundary
+
+### 2026-07-03 — Fable review report and technology foresight
+
+Completed:
+
+- authored the comprehensive review-and-handover document at `incubator/enterprise-azure-anf/reviews/2026-07-03-fable-review-report-and-enhancements.md`: project philosophy, repository map, review findings, the three build waves with what/why/how/where, architecture inputs and invariants, a July-2026 trend-grounded feature roadmap, a prioritized resume-work plan, and the validation evidence ledger
+- refreshed the technology research underpinning the roadmap: NVIDIA Dynamo/NIXL KV-cache offload to networked storage and NetApp's AI Data Engine (the ANF-as-inference-memory opportunity), the MCP 2026-07-28 authorization spec (OAuth 2.1 resource servers), A2A 1.0 under the Linux Foundation, agent-memory vendor landscape versus ANF snapshot-as-memory, EU AI Act enforcement timeline, Azure confidential H100 GA, and the benchmark-gated case for keeping pgvector over GPU ANN (ADR-003 upheld)
+
+Why it mattered:
+
+- the project owner is resuming development after a pause; this report is the single re-entry point that connects the whitepaper's philosophy, the current validated state, and the next quarter of work in dependency order
