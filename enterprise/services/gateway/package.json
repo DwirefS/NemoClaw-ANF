@@ -1,0 +1,15 @@
+{
+  "name": "@nemoclaw-enterprise/gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Secure gateway for the Enterprise Azure ANF overlay: authentication, principal mapping, policy enforcement, redaction, and audit logging in front of the retrieval API",
+  "main": "./src/index.ts",
+  "scripts": {
+    "start": "node --experimental-strip-types ./src/index.ts",
+    "e2e:local": "node ./scripts/e2e-gateway.mjs"
+  },
+  "engines": {
+    "node": ">=22.16.0"
+  }
+}
