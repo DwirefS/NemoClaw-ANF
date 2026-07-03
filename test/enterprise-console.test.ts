@@ -119,7 +119,12 @@ describe("nemomaxxing console", () => {
           principals: ["group:supply-chain"],
         }),
       });
-      const payload = await response.json();
+      const payload = (await response.json()) as {
+        answer: string;
+        model: string;
+        groundingMode: string;
+        results: unknown[];
+      };
 
       expect(response.status).toBe(200);
       expect(payload.answer).toBe("Grounded reply [1]");

@@ -24,11 +24,7 @@ interface CreateServerOptions {
   config: RetrievalApiConfig;
 }
 
-function sendJson(
-  response: http.ServerResponse,
-  statusCode: number,
-  payload: Record<string, unknown>,
-): void {
+function sendJson(response: http.ServerResponse, statusCode: number, payload: object): void {
   response.statusCode = statusCode;
   response.setHeader("content-type", "application/json");
   response.end(JSON.stringify(payload));

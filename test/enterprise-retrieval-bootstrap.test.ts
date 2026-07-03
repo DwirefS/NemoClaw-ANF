@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it, vi } from "vitest";
-import { createRetrievalBackendFromConfig } from "../enterprise/services/retrieval-api/src/backend-factory";
-import { loadRetrievalApiConfig } from "../enterprise/services/retrieval-api/src/config";
+import {
+  createRetrievalBackendFromConfig,
+  type PgPoolModule,
+} from "../enterprise/services/retrieval-api/src/backend-factory";
+import {
+  loadRetrievalApiConfig,
+  type RetrievalRuntimeConfig,
+} from "../enterprise/services/retrieval-api/src/config";
 
 describe("enterprise retrieval bootstrap", () => {
   it("loads pgvector backend configuration and NIM endpoints from env", () => {
@@ -32,27 +38,25 @@ describe("enterprise retrieval bootstrap", () => {
     const loadPgModule = vi.fn(async () => {
       throw new Error("pg should not load in static mode");
     });
-    const backend = await createRetrievalBackendFromConfig(
-      {
-        host: "0.0.0.0",
-        port: 8080,
-        profileMode: "hybrid",
-        serviceName: "retrieval-api",
-        backend: "static",
-        embeddingEndpoint: "http://nemo-embedder.inference.svc.cluster.local:8000",
-        rerankEndpoint: "http://nemo-reranker.inference.svc.cluster.local:8000",
-      },
-      {
-        loadPgModule,
-      },
-    );
+    const config: RetrievalRuntimeConfig = {
+      host: "0.0.0.0",
+      port: 8080,
+      profileMode: "hybrid",
+      serviceName: "retrieval-api",
+      backend: "static",
+      embeddingEndpoint: "http://nemo-embedder.inference.svc.cluster.local:8000",
+      rerankEndpoint: "http://nemo-reranker.inference.svc.cluster.local:8000",
+    };
+    const backend = await createRetrievalBackendFromConfig(config, {
+      loadPgModule,
+    });
 
     await expect(backend.health()).resolves.toEqual({ ok: true });
     expect(loadPgModule).not.toHaveBeenCalled();
   });
 
   it("creates a pgvector backend with a live pg module and NIM embedding provider", async () => {
-    const query = vi.fn(async () => ({
+    const query = vi.fn(async (_sql: string, _params: unknown[]) => ({
       rows: [
         {
           id: "chunk-1",
@@ -73,7 +77,7 @@ describe("enterprise retrieval bootstrap", () => {
         return query(sql, params);
       }
     }
-    const fetchImpl = vi.fn(async () =>
+    const fetchImpl = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) =>
       new Response(
         JSON.stringify({
           data: [{ embedding: [0.5, 0.25, 0.75] }],
@@ -82,22 +86,20 @@ describe("enterprise retrieval bootstrap", () => {
       ),
     );
 
-    const backend = await createRetrievalBackendFromConfig(
-      {
-        host: "0.0.0.0",
-        port: 8080,
-        profileMode: "hybrid",
-        serviceName: "retrieval-api",
-        backend: "pgvector",
-        databaseUrl: "postgres://retrieval:secret@postgres-pgvector.database.svc.cluster.local:5432/nemoclaw_rag",
-        embeddingEndpoint: "http://nemo-embedder.inference.svc.cluster.local:8000",
-        rerankEndpoint: "http://nemo-reranker.inference.svc.cluster.local:8000",
-      },
-      {
-        fetchImpl,
-        loadPgModule: async () => ({ Pool: FakePool }),
-      },
-    );
+    const config: RetrievalRuntimeConfig = {
+      host: "0.0.0.0",
+      port: 8080,
+      profileMode: "hybrid",
+      serviceName: "retrieval-api",
+      backend: "pgvector",
+      databaseUrl: "postgres://retrieval:secret@postgres-pgvector.database.svc.cluster.local:5432/nemoclaw_rag",
+      embeddingEndpoint: "http://nemo-embedder.inference.svc.cluster.local:8000",
+      rerankEndpoint: "http://nemo-reranker.inference.svc.cluster.local:8000",
+    };
+    const backend = await createRetrievalBackendFromConfig(config, {
+      fetchImpl,
+      loadPgModule: async () => ({ Pool: FakePool }) as unknown as PgPoolModule,
+    });
 
     const results = await backend.search({
       query: "Summarize the Q4 forecast variance",

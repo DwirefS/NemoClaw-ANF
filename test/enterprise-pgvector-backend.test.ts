@@ -2,13 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it, vi } from "vitest";
-import { createPgvectorBackend } from "../enterprise/services/retrieval-api/src/pgvector-backend";
+import {
+  createPgvectorBackend,
+  type PgvectorQueryClient,
+} from "../enterprise/services/retrieval-api/src/pgvector-backend";
 
 describe("enterprise pgvector backend", () => {
   it("checks backend health with a lightweight SQL probe", async () => {
-    const query = vi.fn(async () => ({ rows: [{ ready: 1 }] }));
+    const query = vi.fn(async (_sql: string, _parameters: unknown[]) => ({ rows: [{ ready: 1 }] }));
     const backend = createPgvectorBackend({
-      client: { query },
+      client: { query } as unknown as PgvectorQueryClient,
       embeddingProvider: {
         embedQuery: async () => [0.1, 0.2, 0.3],
       },
@@ -19,7 +22,7 @@ describe("enterprise pgvector backend", () => {
   });
 
   it("executes the hybrid pgvector plan and maps rows into retrieval results", async () => {
-    const query = vi.fn(async () => ({
+    const query = vi.fn(async (_sql: string, _parameters: unknown[]) => ({
       rows: [
         {
           id: "chunk-1",
@@ -37,7 +40,7 @@ describe("enterprise pgvector backend", () => {
     }));
     const embedQuery = vi.fn(async () => [0.25, 0.5, 0.75]);
     const backend = createPgvectorBackend({
-      client: { query },
+      client: { query } as unknown as PgvectorQueryClient,
       embeddingProvider: { embedQuery },
     });
 
@@ -79,7 +82,7 @@ describe("enterprise pgvector backend", () => {
   });
 
   it("applies reranking results when a reranking provider is configured", async () => {
-    const query = vi.fn(async () => ({
+    const query = vi.fn(async (_sql: string, _parameters: unknown[]) => ({
       rows: [
         {
           id: "chunk-1",
@@ -108,7 +111,7 @@ describe("enterprise pgvector backend", () => {
       { index: 0, score: 0.7 },
     ]);
     const backend = createPgvectorBackend({
-      client: { query },
+      client: { query } as unknown as PgvectorQueryClient,
       embeddingProvider: {
         embedQuery: async () => [0.1, 0.2, 0.3],
       },

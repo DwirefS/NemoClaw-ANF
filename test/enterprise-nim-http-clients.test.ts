@@ -6,7 +6,7 @@ import { createNimEmbeddingProvider, createNimRerankingProvider } from "../enter
 
 describe("enterprise NIM HTTP clients", () => {
   it("calls the embedding NIM endpoint and returns the first embedding vector", async () => {
-    const fetchImpl = vi.fn(async () =>
+    const fetchImpl = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) =>
       new Response(
         JSON.stringify({
           data: [
@@ -36,7 +36,7 @@ describe("enterprise NIM HTTP clients", () => {
   });
 
   it("calls the reranking NIM endpoint and maps ranked passages", async () => {
-    const fetchImpl = vi.fn(async () =>
+    const fetchImpl = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) =>
       new Response(
         JSON.stringify({
           data: [
