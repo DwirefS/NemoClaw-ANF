@@ -415,3 +415,18 @@ Completed:
 Why it mattered:
 
 - the project owner is resuming development after a pause; this report is the single re-entry point that connects the whitepaper's philosophy, the current validated state, and the next quarter of work in dependency order
+
+### 2026-07-04 — Attribution, retrieval evaluation, and ACL capture (partial wave)
+
+Completed:
+
+- console answers now carry citations mapping the model's numbered markers to supporting passage ids, highlighted in the retrieval inspector
+- added the retrieval quality harness (`npm run eval:retrieval`): labeled corpus, recall@5 and MRR gates; first live run scored recall@5 1.00 and MRR 0.95
+- added automatic ACL capture from filesystem permissions in the ingestion worker (POSIX mode-bit mapping plus an NFSv4 ACL parser), closing the automatic half of permission capture during ingestion
+
+Interrupted by session limits and deferred to the next pass:
+
+- agent memory tier (migration 003, /v1/memory endpoints, gateway passthrough)
+- vitest guard for the ACL capture module
+- KV-cache-on-ANF deployment assets (manifest and Bicep volume)
+- gateway well-known endpoints (OAuth protected-resource metadata, A2A agent card) and HNSW iterative-scan tuning
