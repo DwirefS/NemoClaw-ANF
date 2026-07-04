@@ -3,11 +3,24 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
-import uuid
 from typing import Any, Iterable
 
 import psycopg
+
+
+def _deterministic_chunk_id(source_id: str, content: str) -> str:
+    """Content-addressed chunk id so re-ingesting the same source content
+    upserts in place instead of accumulating duplicate rows."""
+    digest = hashlib.sha256(f"{source_id}\x00{content}".encode("utf-8")).hexdigest()
+    return f"chunk-{digest[:32]}"
+
+
+def _coerce_principals(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [str(item) for item in value if isinstance(item, (str, int)) and str(item).strip()]
 
 
 def _coerce_chunk(chunk: dict[str, Any], *, default_collection: str, default_classification: str) -> tuple[Any, ...]:
@@ -20,16 +33,22 @@ def _coerce_chunk(chunk: dict[str, Any], *, default_collection: str, default_cla
     )
     content = str(chunk.get("text", chunk.get("content", "")))
     embedding = chunk.get("embedding", [])
+    acl_principals = _coerce_principals(metadata.get("acl_principals", chunk.get("acl_principals")))
+
+    chunk_id = chunk.get("id") or _deterministic_chunk_id(source_id, content)
 
     return (
-        str(chunk.get("id", uuid.uuid4())),
+        str(chunk_id),
         source_id,
         title,
         collection,
         classification,
         content,
         json.dumps(metadata),
-        embedding,
+        # pgvector expects the "[...]" literal form; psycopg would otherwise
+        # adapt a Python list as a PostgreSQL array ("{...}") and fail.
+        json.dumps(list(embedding)),
+        acl_principals,
     )
 
 
@@ -63,9 +82,10 @@ def write_chunks_to_postgres(
                   classification,
                   content,
                   metadata,
-                  embedding
+                  embedding,
+                  acl_principals
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb, %s::vector, %s)
                 ON CONFLICT (id) DO UPDATE SET
                   source_id = EXCLUDED.source_id,
                   title = EXCLUDED.title,
@@ -73,7 +93,8 @@ def write_chunks_to_postgres(
                   classification = EXCLUDED.classification,
                   content = EXCLUDED.content,
                   metadata = EXCLUDED.metadata,
-                  embedding = EXCLUDED.embedding
+                  embedding = EXCLUDED.embedding,
+                  acl_principals = EXCLUDED.acl_principals
                 """,
                 rows,
             )

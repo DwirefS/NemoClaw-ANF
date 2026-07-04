@@ -49,7 +49,26 @@ The verification checks:
 
 - the `vector` extension
 - the `document_chunks` table
-- the expected embedding and full-text indexes
+- the expected embedding, full-text, and ACL indexes
+
+## End-To-End Local Stack Validation
+
+The package ships a full end-to-end validation that seeds a sample corpus, mocks the embedding and reranking NIM contracts locally, boots the service in `pgvector` mode, and asserts role and ACL enforcement through the HTTP surface:
+
+```bash
+npm run e2e:local
+```
+
+It requires a bootstrapped `RETRIEVAL_API_DATABASE_URL` and is also run in CI against a `pgvector/pgvector` service container by `.github/workflows/enterprise-retrieval-e2e.yaml`.
+
+## ACL-Aware Retrieval
+
+Chunks carry an `acl_principals` array (`sql/002_acl_principals.sql`):
+
+- an empty array marks the chunk unrestricted (sanitized or public corpus)
+- a non-empty array requires at least one matching principal on the request
+
+Requests may carry `principals` (user, group, or service identifiers). Policy resolution strips principals from `field-agent` requests, so sanitized-only roles can never reach ACL-restricted chunks regardless of what they send. Identity-provider mapping (who is allowed to assert which principals) is intentionally still upstream of this service and tracked as open work in the incubator.
 
 Current modules:
 
@@ -72,3 +91,24 @@ Current live-backend behavior:
 Schema assets:
 
 - `sql/001_document_chunks.sql` creates the `document_chunks` table, pgvector extension, HNSW index, and GIN full-text index used by the hybrid retrieval path
+- `sql/002_acl_principals.sql` adds the `acl_principals` column and GIN index for permission-aware retrieval
+- migrations are recorded in a `schema_migrations` ledger so re-running bootstrap only applies pending files
+
+The embedding column is `vector(1024)`, matching the default embedding model (`nvidia/nv-embedqa-e5-v5`). Changing the embedding model requires a coordinated migration: pgvector HNSW indexes reject `vector` columns above 2000 dimensions, so larger models need a `halfvec` index strategy on pgvector 0.7+.
+
+## Agent Memory
+
+Composable memory tiers per the whitepaper vision:
+
+| Tier | Store | Recall |
+|---|---|---|
+| Semantic | `agent_memory` rows with pgvector embeddings | hybrid vector + full-text, RRF-fused |
+| Episodic | `agent_memory` rows without embeddings | full-text rank and recency |
+| State | ANF volume snapshots of the agent workspace | see the disaster-recovery runbook |
+
+Endpoints (pgvector mode only; 404 otherwise):
+
+- `POST /v1/memory` — `{agentId, kind: episodic|semantic, content, metadata?}` → 201 `{id}`; ids are content-addressed so re-remembering upserts
+- `POST /v1/memory/recall` — `{agentId, query?, kind?, limit?}` → agent-scoped results
+
+Memory is strictly identity-scoped: every SQL path filters `agent_id` first, and the secure gateway overwrites `agentId` with the verified subject, so one agent can never read or write another agent's memory. The retrieval API trusts the field only because the NetworkPolicy makes the gateway its sole caller.

@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { AgentRole, RetrievalResult } from "./contracts";
+import type { AgentRole, RetrievalResult } from "./contracts.ts";
 
 export interface BackendSearchRequest {
   query: string;
   role: AgentRole;
   collections: string[];
   maxResults: number;
+  principals?: string[];
 }
 
 export interface RetrievalBackend {

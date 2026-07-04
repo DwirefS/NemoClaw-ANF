@@ -1,0 +1,101 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# PostgreSQL + pgvector on ANF, adapted from
+# incubator/enterprise-azure-anf/manifests/postgresql-pgvector-statefulset.yaml.
+# WAL and data live on separate ANF volumes at different service levels
+# (spec 08): pg-wal on anf-ultra-rwx, pg-data on anf-premium-rwx.
+#
+# Secret contract (created by scripts/02-bootstrap-cluster.sh):
+#   postgres-auth          username/password for the server itself
+#   retrieval-api-secrets  postgres-dsn consumed by the retrieval API and its
+#                          bootstrap/verify jobs as RETRIEVAL_API_DATABASE_URL
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: postgres-pgvector
+      namespace: data-plane
+    spec:
+      clusterIP: None
+      selector:
+        app: postgres-pgvector
+      ports:
+        - name: postgres
+          port: 5432
+          targetPort: 5432
+  - apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: postgres-pgvector
+      namespace: data-plane
+    spec:
+      serviceName: postgres-pgvector
+      replicas: 1
+      selector:
+        matchLabels:
+          app: postgres-pgvector
+      template:
+        metadata:
+          labels:
+            app: postgres-pgvector
+        spec:
+          containers:
+            - name: postgres
+              image: pgvector/pgvector:0.8.2-pg16
+              ports:
+                - containerPort: 5432
+              env:
+                - name: POSTGRES_DB
+                  value: nemoclaw_rag
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-auth
+                      key: username
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-auth
+                      key: password
+                - name: PGDATA
+                  value: /var/lib/postgresql/data/pgdata
+              volumeMounts:
+                - name: pg-data
+                  mountPath: /var/lib/postgresql/data
+                - name: pg-wal
+                  mountPath: /var/lib/postgresql/wal
+              args:
+                - -c
+                - shared_preload_libraries=vector
+                - -c
+                - wal_level=replica
+                - -c
+                - hnsw.ef_search=64
+              readinessProbe:
+                exec:
+                  command:
+                    - sh
+                    - -c
+                    - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+                initialDelaySeconds: 10
+                periodSeconds: 10
+      volumeClaimTemplates:
+        - metadata:
+            name: pg-data
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            storageClassName: anf-premium-rwx
+            resources:
+              requests:
+                storage: 4Ti
+        - metadata:
+            name: pg-wal
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            storageClassName: anf-ultra-rwx
+            resources:
+              requests:
+                storage: 1Ti

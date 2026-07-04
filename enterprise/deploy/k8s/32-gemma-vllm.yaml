@@ -1,0 +1,97 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Open-weights alternative chat path: google/gemma-3-27b-it served by vLLM
+# with an OpenAI-compatible API on :8000. Model weights are cached on an
+# ANF-backed RWX PVC so restarts and additional replicas skip the Hugging
+# Face download. Requires the hf-token-secret created by
+# scripts/02-bootstrap-cluster.sh.
+# See 33-gemma-sglang.yaml for the SGLang variant of the same shape.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: gemma-vllm-weights
+      namespace: inference
+    spec:
+      accessModes: ["ReadWriteMany"]
+      storageClassName: anf-premium-rwx
+      resources:
+        requests:
+          storage: 200Gi
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: gemma-vllm
+      namespace: inference
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: gemma-vllm
+      template:
+        metadata:
+          labels:
+            app: gemma-vllm
+        spec:
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Equal
+              value: present
+              effect: NoSchedule
+          containers:
+            - name: vllm
+              image: vllm/vllm-openai:v0.8.5
+              args:
+                - --model
+                - google/gemma-3-27b-it
+                - --port
+                - "8000"
+                - --download-dir
+                - /models
+              ports:
+                - containerPort: 8000
+              env:
+                - name: HF_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: hf-token-secret
+                      key: token
+                - name: HF_HOME
+                  value: /models/hf-home
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+              volumeMounts:
+                - name: weights
+                  mountPath: /models
+                - name: shm
+                  mountPath: /dev/shm
+              readinessProbe:
+                httpGet:
+                  path: /health
+                  port: 8000
+                initialDelaySeconds: 60
+                periodSeconds: 15
+          volumes:
+            - name: weights
+              persistentVolumeClaim:
+                claimName: gemma-vllm-weights
+            - name: shm
+              emptyDir:
+                medium: Memory
+                sizeLimit: 8Gi
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: gemma-vllm
+      namespace: inference
+    spec:
+      selector:
+        app: gemma-vllm
+      ports:
+        - name: http
+          port: 8000
+          targetPort: 8000

@@ -15,12 +15,12 @@
 
 ## File Structure
 
-**Create**
+### Create
 
 - `.github/workflows/enterprise-site-pages.yml`
 - `test/enterprise-site-publish-workflow.test.ts`
 
-**Modify**
+### Modify
 
 - `incubator/enterprise-azure-anf/specs/15-engineering-tracker.md`
 - `incubator/enterprise-azure-anf/specs/16-program-logbook.md`
@@ -31,6 +31,7 @@
 ### Task 1: Add a failing test for the Pages workflow
 
 **Files:**
+
 - Create: `test/enterprise-site-publish-workflow.test.ts`
 
 - [ ] **Step 1: Write the failing workflow test**
@@ -73,6 +74,7 @@ Expected: FAIL because the workflow does not exist yet
 ### Task 2: Add the GitHub Pages workflow
 
 **Files:**
+
 - Create: `.github/workflows/enterprise-site-pages.yml`
 
 - [ ] **Step 1: Implement the workflow**
@@ -147,6 +149,7 @@ Expected: PASS
 ### Task 3: Update the program control surfaces
 
 **Files:**
+
 - Modify: `incubator/enterprise-azure-anf/specs/15-engineering-tracker.md`
 - Modify: `incubator/enterprise-azure-anf/specs/16-program-logbook.md`
 - Modify: `incubator/enterprise-azure-anf/specs/17-delivery-backlog-and-dependencies.md`
@@ -175,6 +178,7 @@ Move the Pages workflow from `next` to `done`, and add a follow-up note for the 
 ### Task 4: Run the focused verification suite
 
 **Files:**
+
 - No new files beyond the workflow and tracker updates
 
 - [ ] **Step 1: Run the focused test suite**

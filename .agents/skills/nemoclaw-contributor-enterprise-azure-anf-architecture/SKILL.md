@@ -9,12 +9,12 @@ Start with the incubator spec set and ADRs.
 
 ## Read Order
 
-1. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/00-executive-summary.md`
-2. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/03-current-state-architecture-hybrid.md`
-3. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/05-data-plane-rag-and-pgvector.md`
-4. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/07-security-trust-zones-and-guardrails.md`
-5. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/08-anf-storage-layout-and-dr.md`
-6. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/adrs/README.md`
+1. `incubator/enterprise-azure-anf/specs/00-executive-summary.md`
+2. `incubator/enterprise-azure-anf/specs/03-current-state-architecture-hybrid.md`
+3. `incubator/enterprise-azure-anf/specs/05-data-plane-rag-and-pgvector.md`
+4. `incubator/enterprise-azure-anf/specs/07-security-trust-zones-and-guardrails.md`
+5. `incubator/enterprise-azure-anf/specs/08-anf-storage-layout-and-dr.md`
+6. `incubator/enterprise-azure-anf/adrs/README.md`
 
 ## Use This Skill When
 

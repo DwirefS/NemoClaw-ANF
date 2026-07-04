@@ -1,0 +1,106 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# RAG NIM services (embedding + reranking), following the NIMCache/NIMService
+# pattern from incubator/enterprise-azure-anf/manifests/nim-services.yaml.
+# Model caches live on ANF (anf-premium-rwx, ReadWriteMany) so every NIM
+# replica shares one downloaded copy of the weights.
+# Requires the NIM Operator and ngc-secret/ngc-api-secret from
+# scripts/02-bootstrap-cluster.sh.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMCache
+    metadata:
+      name: embedder-cache
+      namespace: inference
+    spec:
+      source:
+        ngc:
+          modelPuller: nvcr.io/nim/nvidia/nv-embedqa-e5-v5:1.0.0
+          pullSecret: ngc-secret
+          authSecret: ngc-api-secret
+          model:
+            engine: tensorrt
+            tensorParallelism: "1"
+      storage:
+        pvc:
+          create: true
+          storageClass: anf-premium-rwx
+          size: "100Gi"
+          volumeAccessMode: ReadWriteMany
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMService
+    metadata:
+      name: nemo-embedder
+      namespace: inference
+    spec:
+      image:
+        repository: nvcr.io/nim/nvidia/nv-embedqa-e5-v5
+        tag: "1.0.0"
+        pullPolicy: IfNotPresent
+        pullSecrets:
+          - ngc-secret
+      authSecret: ngc-api-secret
+      storage:
+        nimCache:
+          name: embedder-cache
+          profile: ""
+      env:
+        - name: NIM_MODEL_NAME
+          value: nvidia/nv-embedqa-e5-v5
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      expose:
+        service:
+          type: ClusterIP
+          port: 8000
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMCache
+    metadata:
+      name: reranker-cache
+      namespace: inference
+    spec:
+      source:
+        ngc:
+          modelPuller: nvcr.io/nim/nvidia/llama-nemotron-rerank-1b-v2:1.0.0
+          pullSecret: ngc-secret
+          authSecret: ngc-api-secret
+          model:
+            engine: tensorrt
+            tensorParallelism: "1"
+      storage:
+        pvc:
+          create: true
+          storageClass: anf-premium-rwx
+          size: "100Gi"
+          volumeAccessMode: ReadWriteMany
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMService
+    metadata:
+      name: nemo-reranker
+      namespace: inference
+    spec:
+      image:
+        repository: nvcr.io/nim/nvidia/llama-nemotron-rerank-1b-v2
+        tag: "1.0.0"
+        pullPolicy: IfNotPresent
+        pullSecrets:
+          - ngc-secret
+      authSecret: ngc-api-secret
+      storage:
+        nimCache:
+          name: reranker-cache
+          profile: ""
+      env:
+        - name: NIM_MODEL_NAME
+          value: nvidia/llama-nemotron-rerank-1b-v2
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      expose:
+        service:
+          type: ClusterIP
+          port: 8000

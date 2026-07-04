@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# NemoMaxxing console. Image is a placeholder built from
+# enterprise/services/console/ (developed in parallel against exactly this
+# env contract: RETRIEVAL_API_URL, CHAT_ENDPOINT, CHAT_MODEL).
+# CHAT_MODEL must track the model served by k8s/31-nemotron-nimservice.yaml.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: console
+      namespace: console
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: console
+      template:
+        metadata:
+          labels:
+            app: console
+        spec:
+          containers:
+            - name: console
+              image: nemomaxxing/console:dev
+              ports:
+                - containerPort: 8090
+              env:
+                # Routed through the secure gateway (55-gateway.yaml); the
+                # retrieval API's NetworkPolicy blocks direct access.
+                - name: RETRIEVAL_API_URL
+                  value: http://retrieval-gateway.data-plane.svc.cluster.local:8095
+                - name: CONSOLE_RETRIEVAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: console-gateway-token
+                      key: token
+                - name: CHAT_ENDPOINT
+                  value: http://nemotron-llm.inference.svc.cluster.local:8000
+                - name: CHAT_MODEL
+                  value: nvidia/llama-3.1-nemotron-ultra-253b-v1
+              readinessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8090
+                initialDelaySeconds: 5
+                periodSeconds: 10
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: console
+      namespace: console
+    spec:
+      selector:
+        app: console
+      ports:
+        - name: http
+          port: 8090
+          targetPort: 8090

@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# ANF storage classes via NetApp Trident CSI, adapted from
+# incubator/enterprise-azure-anf/manifests/storageclasses-anf.yaml.
+# All classes mount NFSv4.1 with hard mounts (required for PostgreSQL
+# correctness) and nconnect=8 for throughput.
+# Requires the TridentBackendConfig created by scripts/02-bootstrap-cluster.sh.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: anf-ultra-rwx
+    provisioner: csi.trident.netapp.io
+    allowVolumeExpansion: true
+    mountOptions:
+      - nfsvers=4.1
+      - hard
+      - nconnect=8
+    parameters:
+      backendType: azure-netapp-files
+      selector: "serviceLevel=Ultra"
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: anf-premium-rwx
+    provisioner: csi.trident.netapp.io
+    allowVolumeExpansion: true
+    mountOptions:
+      - nfsvers=4.1
+      - hard
+      - nconnect=8
+    parameters:
+      backendType: azure-netapp-files
+      selector: "serviceLevel=Premium"
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: anf-standard-rwx
+    provisioner: csi.trident.netapp.io
+    allowVolumeExpansion: true
+    mountOptions:
+      - nfsvers=4.1
+      - hard
+      - nconnect=8
+    parameters:
+      backendType: azure-netapp-files
+      selector: "serviceLevel=Standard"

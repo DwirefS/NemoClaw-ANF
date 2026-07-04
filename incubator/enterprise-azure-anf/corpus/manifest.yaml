@@ -1,3 +1,7 @@
+# Paths under `path:` and `captured_from:` are historical provenance records
+# of where the raw research files lived when the corpus was normalized.
+# The raw files themselves were never committed to this repository; only the
+# normalized derivatives in this corpus/ directory are repo-owned.
 schema_version: 1
 source_bundle:
   name: "Enterprise Azure ANF research bundle"

@@ -15,14 +15,14 @@
 
 ## File Structure
 
-**Create**
+### Create
 
 - `enterprise/services/retrieval-api/scripts/verify-live-postgres.mjs`
 - `incubator/enterprise-azure-anf/manifests/retrieval-postgres-verify-job.yaml`
 - `test/enterprise-retrieval-live-postgres-script.test.ts`
 - `test/enterprise-retrieval-live-postgres-job.test.ts`
 
-**Modify**
+### Modify
 
 - `enterprise/services/retrieval-api/package.json`
 - `enterprise/services/retrieval-api/README.md`
@@ -35,6 +35,7 @@
 ### Task 1: Add a failing test for the live PostgreSQL verification script
 
 **Files:**
+
 - Create: `test/enterprise-retrieval-live-postgres-script.test.ts`
 
 - [ ] **Step 1: Write the failing test**
@@ -76,6 +77,7 @@ Expected: FAIL because the verification script does not exist yet
 ### Task 2: Implement the package-owned verification script
 
 **Files:**
+
 - Create: `enterprise/services/retrieval-api/scripts/verify-live-postgres.mjs`
 - Modify: `enterprise/services/retrieval-api/package.json`
 
@@ -199,6 +201,7 @@ Expected: FAIL with `Missing required environment variable: RETRIEVAL_API_DATABA
 ### Task 3: Add an incubator verification job manifest
 
 **Files:**
+
 - Create: `incubator/enterprise-azure-anf/manifests/retrieval-postgres-verify-job.yaml`
 - Create: `test/enterprise-retrieval-live-postgres-job.test.ts`
 
@@ -274,6 +277,7 @@ Expected: PASS
 ### Task 4: Document the live verification flow
 
 **Files:**
+
 - Modify: `enterprise/services/retrieval-api/README.md`
 
 - [ ] **Step 1: Add a live verification section**
@@ -305,6 +309,7 @@ Expected: PASS
 ### Task 5: Update the control surfaces and run the focused verification suite
 
 **Files:**
+
 - Modify: `incubator/enterprise-azure-anf/specs/15-engineering-tracker.md`
 - Modify: `incubator/enterprise-azure-anf/specs/16-program-logbook.md`
 - Modify: `incubator/enterprise-azure-anf/specs/17-delivery-backlog-and-dependencies.md`

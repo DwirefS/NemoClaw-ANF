@@ -1,0 +1,68 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Nemotron chat LLM, following the NIMCache/NIMService pattern from
+# incubator/enterprise-azure-anf/manifests/nim-services.yaml.
+#
+# Default model: nvidia/llama-3.1-nemotron-ultra-253b-v1 with a TRT-LLM engine
+# profile at tensorParallelism 8. This requires a multi-GPU node (e.g.
+# Standard_ND96isr_H100_v5); the default gpuVmSize in azure/modules/aks.bicep
+# (single A100) cannot run it.
+#
+# Cost-down swap: replace the model with nvidia/llama-3.1-nemotron-70b-instruct
+# and drop tensorParallelism to "1" (single A100/H100):
+#   NIMCache spec.source.ngc.model.tensorParallelism: "1"
+#   NIMService env NIM_MODEL_NAME: nvidia/llama-3.1-nemotron-70b-instruct
+#   NIMService resources.limits."nvidia.com/gpu": 1
+#   NIMCache storage size can shrink to "400Gi"
+# Keep CHAT_MODEL in k8s/60-console.yaml in sync with the served model name.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMCache
+    metadata:
+      name: nemotron-cache
+      namespace: inference
+    spec:
+      source:
+        ngc:
+          modelPuller: nvcr.io/nim/nvidia/llm-nim:1.11.0
+          pullSecret: ngc-secret
+          authSecret: ngc-api-secret
+          model:
+            engine: tensorrt_llm
+            tensorParallelism: "8"
+      storage:
+        pvc:
+          create: true
+          storageClass: anf-ultra-rwx
+          size: "2Ti"
+          volumeAccessMode: ReadWriteMany
+  - apiVersion: apps.nvidia.com/v1alpha1
+    kind: NIMService
+    metadata:
+      name: nemotron-llm
+      namespace: inference
+    spec:
+      image:
+        repository: nvcr.io/nim/nvidia/llm-nim
+        tag: "1.11.0"
+        pullPolicy: IfNotPresent
+        pullSecrets:
+          - ngc-secret
+      authSecret: ngc-api-secret
+      storage:
+        nimCache:
+          name: nemotron-cache
+          profile: tensorrt_llm
+      env:
+        - name: NIM_MODEL_NAME
+          value: nvidia/llama-3.1-nemotron-ultra-253b-v1
+      resources:
+        limits:
+          nvidia.com/gpu: 8
+      expose:
+        service:
+          type: ClusterIP
+          port: 8000

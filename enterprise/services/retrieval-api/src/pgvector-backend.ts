@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { BackendSearchRequest, RetrievalBackend } from "./backend";
-import type { RetrievalResult } from "./contracts";
-import { buildHybridSearchPlan } from "./pgvector";
+import type { BackendSearchRequest, RetrievalBackend } from "./backend.ts";
+import type { RetrievalResult } from "./contracts.ts";
+import { buildHybridSearchPlan, toVectorLiteral } from "./pgvector.ts";
 
 interface PgvectorRow {
   id: string;
@@ -59,16 +59,17 @@ function applyReranking(
       index,
       score: scoreByIndex.get(index),
     }))
-    .sort((left, right) => (right.score ?? Number.NEGATIVE_INFINITY) - (left.score ?? Number.NEGATIVE_INFINITY))
+    .sort(
+      (left, right) =>
+        (right.score ?? Number.NEGATIVE_INFINITY) - (left.score ?? Number.NEGATIVE_INFINITY),
+    )
     .map((item) => ({
       ...item.row,
       fused_score: item.score ?? item.row.fused_score,
     }));
 }
 
-export function createPgvectorBackend(
-  options: CreatePgvectorBackendOptions,
-): RetrievalBackend {
+export function createPgvectorBackend(options: CreatePgvectorBackendOptions): RetrievalBackend {
   return {
     async health() {
       await options.client.query("SELECT 1 AS ready", []);
@@ -81,13 +82,15 @@ export function createPgvectorBackend(
         role: request.role,
         collections: request.collections,
         maxResults: request.maxResults,
+        principals: request.principals,
       });
       const result = await options.client.query<PgvectorRow>(plan.sql, [
-        embedding,
+        toVectorLiteral(embedding),
         plan.parameters.collections,
         plan.parameters.queryText,
         plan.parameters.limit,
         plan.parameters.rrfK,
+        plan.parameters.principals,
       ]);
       const rows =
         options.rerankingProvider && result.rows.length > 1

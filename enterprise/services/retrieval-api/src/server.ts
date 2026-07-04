@@ -1,13 +1,18 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import http from "node:http";
 import { randomUUID } from "node:crypto";
+import http from "node:http";
 import type { AddressInfo } from "node:net";
-import type { RetrievalApiConfig } from "./config";
-import type { ErrorResponseBody, RetrievalRequestBody, RetrievalResponseBody } from "./contracts";
-import type { RetrievalBackend } from "./backend";
-import { resolveRetrievalPolicy } from "./policy";
+import type { RetrievalBackend } from "./backend.ts";
+import type { RetrievalApiConfig } from "./config.ts";
+import type {
+  ErrorResponseBody,
+  RetrievalRequestBody,
+  RetrievalResponseBody,
+} from "./contracts.ts";
+import type { MemoryKind, MemoryStore } from "./memory.ts";
+import { resolveRetrievalPolicy } from "./policy.ts";
 
 export interface RetrievalApiServer {
   listen(): Promise<void>;
@@ -18,13 +23,76 @@ export interface RetrievalApiServer {
 interface CreateServerOptions {
   backend: RetrievalBackend;
   config: RetrievalApiConfig;
+  /** Present only in pgvector mode; memory routes 404 without it. */
+  memoryStore?: MemoryStore;
 }
 
-function sendJson(
-  response: http.ServerResponse,
-  statusCode: number,
-  payload: Record<string, unknown>,
-): void {
+interface MemoryWriteBody {
+  agentId: string;
+  kind: MemoryKind;
+  content: string;
+  metadata?: Record<string, unknown>;
+}
+
+interface MemoryRecallBody {
+  agentId: string;
+  query?: string;
+  kind?: MemoryKind;
+  limit?: number;
+}
+
+function isMemoryKind(value: unknown): value is MemoryKind {
+  return value === "episodic" || value === "semantic";
+}
+
+function parseMemoryWriteBody(rawBody: string): MemoryWriteBody | null {
+  try {
+    const body = JSON.parse(rawBody) as Partial<MemoryWriteBody>;
+    if (
+      typeof body.agentId !== "string" ||
+      body.agentId.trim() === "" ||
+      typeof body.content !== "string" ||
+      body.content.trim() === "" ||
+      !isMemoryKind(body.kind)
+    ) {
+      return null;
+    }
+    return {
+      agentId: body.agentId,
+      kind: body.kind,
+      content: body.content,
+      metadata:
+        body.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
+          ? body.metadata
+          : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function parseMemoryRecallBody(rawBody: string): MemoryRecallBody | null {
+  try {
+    const body = JSON.parse(rawBody) as Partial<MemoryRecallBody>;
+    if (typeof body.agentId !== "string" || body.agentId.trim() === "") {
+      return null;
+    }
+    if (body.kind !== undefined && !isMemoryKind(body.kind)) {
+      return null;
+    }
+    if (body.query !== undefined && typeof body.query !== "string") {
+      return null;
+    }
+    if (body.limit !== undefined && (!Number.isInteger(body.limit) || body.limit < 1)) {
+      return null;
+    }
+    return { agentId: body.agentId, query: body.query, kind: body.kind, limit: body.limit };
+  } catch {
+    return null;
+  }
+}
+
+function sendJson(response: http.ServerResponse, statusCode: number, payload: object): void {
   response.statusCode = statusCode;
   response.setHeader("content-type", "application/json");
   response.end(JSON.stringify(payload));
@@ -49,7 +117,18 @@ function parseRequestBody(rawBody: string): RetrievalRequestBody | null {
       return null;
     }
 
-    if (body.maxResults !== undefined && (!Number.isInteger(body.maxResults) || body.maxResults < 1)) {
+    if (
+      body.maxResults !== undefined &&
+      (!Number.isInteger(body.maxResults) || body.maxResults < 1)
+    ) {
+      return null;
+    }
+
+    if (body.principals && !Array.isArray(body.principals)) {
+      return null;
+    }
+
+    if (body.principals?.some((value) => typeof value !== "string" || value.trim() === "")) {
       return null;
     }
 
@@ -58,16 +137,25 @@ function parseRequestBody(rawBody: string): RetrievalRequestBody | null {
       role: body.role,
       collections: body.collections,
       maxResults: body.maxResults,
+      principals: body.principals,
     };
   } catch {
     return null;
   }
 }
 
-async function readBody(request: http.IncomingMessage): Promise<string> {
+const MAX_BODY_BYTES = 64 * 1024;
+
+async function readBody(request: http.IncomingMessage): Promise<string | null> {
   const chunks: Buffer[] = [];
+  let total = 0;
   for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    total += buffer.length;
+    if (total > MAX_BODY_BYTES) {
+      return null;
+    }
+    chunks.push(buffer);
   }
   return Buffer.concat(chunks).toString("utf8");
 }
@@ -75,13 +163,78 @@ async function readBody(request: http.IncomingMessage): Promise<string> {
 export function createRetrievalApiServer(options: CreateServerOptions): RetrievalApiServer {
   const server = http.createServer(async (request, response) => {
     if (request.method === "GET" && request.url === "/healthz") {
-      const health = await options.backend.health();
-      sendJson(response, 200, { ...health, service: options.config.serviceName });
+      // Liveness: the process is up and serving. Kept dependency-free so a
+      // database outage surfaces as not-ready rather than a restart loop.
+      sendJson(response, 200, { ok: true, service: options.config.serviceName });
+      return;
+    }
+
+    if (request.method === "GET" && request.url === "/readyz") {
+      try {
+        const health = await options.backend.health();
+        sendJson(response, 200, { ...health, service: options.config.serviceName });
+      } catch (error) {
+        sendJson(response, 503, {
+          ok: false,
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
+      return;
+    }
+
+    if (request.method === "POST" && request.url === "/v1/memory") {
+      if (!options.memoryStore) {
+        sendJson(response, 404, { error: "not_found" });
+        return;
+      }
+      const rawBody = await readBody(request);
+      if (rawBody === null) {
+        sendJson(response, 413, { error: "invalid_request", message: "Request body too large." });
+        return;
+      }
+      const body = parseMemoryWriteBody(rawBody);
+      if (!body) {
+        sendJson(response, 400, {
+          error: "invalid_request",
+          message: "agentId, kind (episodic|semantic), and content are required.",
+        });
+        return;
+      }
+      const { id } = await options.memoryStore.remember(body);
+      sendJson(response, 201, { id, agentId: body.agentId, kind: body.kind });
+      return;
+    }
+
+    if (request.method === "POST" && request.url === "/v1/memory/recall") {
+      if (!options.memoryStore) {
+        sendJson(response, 404, { error: "not_found" });
+        return;
+      }
+      const rawBody = await readBody(request);
+      if (rawBody === null) {
+        sendJson(response, 413, { error: "invalid_request", message: "Request body too large." });
+        return;
+      }
+      const body = parseMemoryRecallBody(rawBody);
+      if (!body) {
+        sendJson(response, 400, {
+          error: "invalid_request",
+          message: "agentId is required; kind and limit must be valid when present.",
+        });
+        return;
+      }
+      const results = await options.memoryStore.recall(body);
+      sendJson(response, 200, { agentId: body.agentId, results });
       return;
     }
 
     if (request.method === "POST" && request.url === "/v1/query") {
-      const body = parseRequestBody(await readBody(request));
+      const rawBody = await readBody(request);
+      if (rawBody === null) {
+        sendJson(response, 413, { error: "invalid_request", message: "Request body too large." });
+        return;
+      }
+      const body = parseRequestBody(rawBody);
       if (!body) {
         const payload: ErrorResponseBody = {
           error: "invalid_request",
@@ -106,6 +259,7 @@ export function createRetrievalApiServer(options: CreateServerOptions): Retrieva
         role: body.role,
         collections: policy.filteredCollections,
         maxResults: policy.maxResults,
+        principals: policy.principals,
       });
 
       const payload: RetrievalResponseBody = {

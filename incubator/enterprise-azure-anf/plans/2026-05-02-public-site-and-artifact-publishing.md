@@ -15,7 +15,7 @@
 
 ## File Structure
 
-**Create**
+### Create
 
 - `site/README.md`
 - `site/index.html`
@@ -38,7 +38,7 @@
 - `artifacts/enterprise-azure-anf/Sovereign_Agentic_Factory.pdf`
 - `test/enterprise-site.test.ts`
 
-**Modify**
+### Modify
 
 - `incubator/enterprise-azure-anf/specs/15-engineering-tracker.md`
 - `incubator/enterprise-azure-anf/specs/16-program-logbook.md`
@@ -49,6 +49,7 @@
 ### Task 1: Scaffold the public site and add a failing structure test
 
 **Files:**
+
 - Create: `test/enterprise-site.test.ts`
 - Create: `site/README.md`
 - Create: `site/index.html`
@@ -177,6 +178,7 @@ git commit -m "feat(site): scaffold public enterprise site"
 ### Task 2: Publish the visible repo-root artifact store
 
 **Files:**
+
 - Create: `artifacts/enterprise-azure-anf/README.md`
 - Create: `artifacts/enterprise-azure-anf/ChatGPT Image May 1, 2026, 12_37_25 AM (1).png`
 - Create: `artifacts/enterprise-azure-anf/ChatGPT Image May 1, 2026, 12_37_25 AM (2).png`
@@ -250,6 +252,7 @@ git commit -m "feat(site): add public enterprise artifacts"
 ### Task 3: Build the landing page and shared design system
 
 **Files:**
+
 - Modify: `site/index.html`
 - Modify: `site/assets/styles/main.css`
 - Modify: `site/assets/scripts/main.js`
@@ -349,6 +352,7 @@ git commit -m "feat(site): build enterprise landing page"
 ### Task 4: Add the technical deep-dive pages
 
 **Files:**
+
 - Create: `site/architecture/index.html`
 - Create: `site/data-plane/index.html`
 - Create: `site/security/index.html`
@@ -434,6 +438,7 @@ git commit -m "feat(site): add enterprise deep-dive pages"
 ### Task 5: Add icon provenance and final publishing checks
 
 **Files:**
+
 - Create: `site/assets/icons/README.md`
 - Modify: `test/enterprise-site.test.ts`
 - Modify: `incubator/enterprise-azure-anf/specs/15-engineering-tracker.md`

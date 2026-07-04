@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { createStaticBackend, type RetrievalBackend } from "./backend";
-import type { RetrievalBackendConfig } from "./config";
-import { createNimEmbeddingProvider, createNimRerankingProvider } from "./nim-http";
-import { createPgvectorBackend, type PgvectorQueryClient } from "./pgvector-backend";
+import { createStaticBackend, type RetrievalBackend } from "./backend.ts";
+import type { RetrievalBackendConfig } from "./config.ts";
+import { createMemoryStore, type MemoryStore } from "./memory.ts";
+import { createNimEmbeddingProvider, createNimRerankingProvider } from "./nim-http.ts";
+import { createPgvectorBackend, type PgvectorQueryClient } from "./pgvector-backend.ts";
 
 export interface PgPoolModule {
   Pool: new (config: { connectionString: string }) => PgvectorQueryClient;
@@ -45,6 +46,27 @@ export async function createRetrievalBackendFromConfig(
     }),
     rerankingProvider: createNimRerankingProvider({
       baseUrl: config.rerankEndpoint,
+      fetchImpl: options.fetchImpl,
+      apiKey: config.nimApiKey,
+    }),
+  });
+}
+
+export async function createMemoryStoreFromConfig(
+  config: RetrievalBackendConfig,
+  options: CreateBackendFactoryOptions = {},
+): Promise<MemoryStore | undefined> {
+  if (config.backend !== "pgvector" || !config.databaseUrl) {
+    return undefined;
+  }
+  const pgModule = await (options.loadPgModule ?? loadDefaultPgModule)();
+  const pool = new pgModule.Pool({
+    connectionString: config.databaseUrl,
+  });
+  return createMemoryStore({
+    client: pool,
+    embeddingProvider: createNimEmbeddingProvider({
+      baseUrl: config.embeddingEndpoint,
       fetchImpl: options.fetchImpl,
       apiKey: config.nimApiKey,
     }),

@@ -20,8 +20,9 @@ describe("retrieval live postgres verification script", () => {
     expect(script).toContain("RETRIEVAL_API_DATABASE_URL");
     expect(script).toContain("pg_extension");
     expect(script).toContain("document_chunks");
-    expect(script).toContain("document_chunks_embedding_idx");
-    expect(script).toContain("document_chunks_fts_idx");
+    expect(script).toContain("document_chunks_embedding_hnsw_idx");
+    expect(script).toContain("document_chunks_tsv_gin_idx");
+    expect(script).toContain("document_chunks_acl_principals_gin_idx");
     expect(script).toContain("Verification summary");
     expect(script).toContain("process.exit(1)");
   });

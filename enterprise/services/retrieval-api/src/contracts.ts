@@ -10,6 +10,14 @@ export interface RetrievalRequestBody {
   role: AgentRole;
   collections?: string[];
   maxResults?: number;
+  /**
+   * Identity principals (user, group, or service identifiers) attached to the
+   * calling agent's session. Chunks with a non-empty ACL are only eligible
+   * when at least one chunk principal matches a request principal.
+   * Field-agent requests are always treated as having no principals, so they
+   * can only ground on unrestricted (empty-ACL) chunks.
+   */
+  principals?: string[];
 }
 
 export interface RetrievalResult {

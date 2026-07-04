@@ -1,0 +1,104 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# SGLang variant of the Gemma open-weights chat path (same shape as
+# 32-gemma-vllm.yaml): google/gemma-3-27b-it on an OpenAI-compatible :8000,
+# weights cached on an ANF-backed RWX PVC, HF token from hf-token-secret.
+#
+# Note: TRT-LLM-engine serving of optimized engines is covered by the NIM
+# path in 31-nemotron-nimservice.yaml; this manifest and 32 exist for teams
+# that want open-weights serving runtimes alongside the NIM stack.
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: gemma-sglang-weights
+      namespace: inference
+    spec:
+      accessModes: ["ReadWriteMany"]
+      storageClassName: anf-premium-rwx
+      resources:
+        requests:
+          storage: 200Gi
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: gemma-sglang
+      namespace: inference
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: gemma-sglang
+      template:
+        metadata:
+          labels:
+            app: gemma-sglang
+        spec:
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Equal
+              value: present
+              effect: NoSchedule
+          containers:
+            - name: sglang
+              image: lmsysorg/sglang:v0.4.6-cu124
+              command:
+                - python3
+                - -m
+                - sglang.launch_server
+              args:
+                - --model-path
+                - google/gemma-3-27b-it
+                - --host
+                - 0.0.0.0
+                - --port
+                - "8000"
+                - --download-dir
+                - /models
+              ports:
+                - containerPort: 8000
+              env:
+                - name: HF_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: hf-token-secret
+                      key: token
+                - name: HF_HOME
+                  value: /models/hf-home
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+              volumeMounts:
+                - name: weights
+                  mountPath: /models
+                - name: shm
+                  mountPath: /dev/shm
+              readinessProbe:
+                httpGet:
+                  path: /health
+                  port: 8000
+                initialDelaySeconds: 60
+                periodSeconds: 15
+          volumes:
+            - name: weights
+              persistentVolumeClaim:
+                claimName: gemma-sglang-weights
+            - name: shm
+              emptyDir:
+                medium: Memory
+                sizeLimit: 8Gi
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: gemma-sglang
+      namespace: inference
+    spec:
+      selector:
+        app: gemma-sglang
+      ports:
+        - name: http
+          port: 8000
+          targetPort: 8000

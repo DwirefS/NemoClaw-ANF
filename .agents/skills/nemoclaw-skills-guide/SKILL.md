@@ -68,6 +68,17 @@ Covers creating pull requests that follow the project template and drafting docu
 | `nemoclaw-contributor-create-pr` | Create GitHub pull requests that follow the NemoClaw PR template, including pre-PR checks, conventional commit titles, and DCO sign-off. |
 | `nemoclaw-contributor-update-docs` | Scan recent git commits for user-facing changes and draft or update the corresponding documentation pages. |
 
+### NemoMaxxing Skills
+
+For cloud engineers (or their agents) deploying the NemoMaxxing platform: the end-to-end NVIDIA-on-Azure stack built on this fork, with Azure NetApp Files as the persistent storage layer everywhere. Load them in this order.
+
+| Skill | Summary |
+|-------|---------|
+| `nemomaxxing-overview` | Orient on the platform: three-layer model, architecture from the ANF document share through ingestion, retrieval, inference, agents, and console, plus the honest validation ledger. |
+| `nemomaxxing-deploy-azure-infra` | Deploy the Azure foundation: Bicep (VNet, ANF account/pools/volumes, AKS GPU cluster, Key Vault) and cluster bootstrap (GPU Operator, NIM Operator, Trident, secrets). |
+| `nemomaxxing-deploy-platform` | Apply the numbered `enterprise/deploy/k8s/` manifests with readiness gates: PostgreSQL+pgvector, RAG NIMs, Nemotron, Gemma engines, nv-ingest, retrieval API, console, worker tier. |
+| `nemomaxxing-validate-and-operate` | Validate end to end, run ingestion operations against the ANF share, troubleshoot, benchmark, and keep the program control surfaces current. |
+
 ## Getting Started
 
 Ask the user which role best describes them:

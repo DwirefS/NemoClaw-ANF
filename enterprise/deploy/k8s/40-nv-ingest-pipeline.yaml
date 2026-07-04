@@ -1,0 +1,82 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# NeMo Retriever ingestion pipeline, adapted from
+# incubator/enterprise-azure-anf/manifests/nv-ingest-trigger.yaml.
+# Reconciles the rag-documents ANF share (mounted read-only at
+# /data/rag-source) into PostgreSQL via the packaged
+# enterprise/workers/nemo-retriever-ingest worker.
+#
+# Secret contract: ingestion-secrets/postgres-dsn must be a DSN that is
+# compatible with the RETRIEVAL_API_DATABASE_URL used by the retrieval API
+# bootstrap (same database, same document_chunks schema).
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: rag-documents
+      namespace: ingestion
+    spec:
+      # The RAG source file share (ANF volume `rag-documents` in
+      # azure/modules/anf.bicep). Dynamically provisioned here via Trident;
+      # to bind the statically created ANF volume instead, pre-create a PV
+      # from the ragDocumentsVolumeId / ragDocumentsMountIp outputs.
+      accessModes: ["ReadWriteMany"]
+      storageClassName: anf-standard-rwx
+      resources:
+        requests:
+          storage: 2Ti
+  - apiVersion: batch/v1
+    kind: CronJob
+    metadata:
+      name: nv-ingest-reconcile
+      namespace: ingestion
+    spec:
+      schedule: "*/10 * * * *"
+      concurrencyPolicy: Forbid
+      jobTemplate:
+        spec:
+          template:
+            spec:
+              restartPolicy: OnFailure
+              containers:
+                # Packaged worker source provenance:
+                # git+https://github.com/NVIDIA/NeMo-Retriever@release/26.03
+                # from nemo_retriever import create_ingestor
+                # .files(documents)
+                # .extract(
+                # .embed()
+                - name: nemo-retriever-ingest
+                  image: ghcr.io/dwirefs/nemoclaw-anf/nemo-retriever-ingest:dev
+                  env:
+                    - name: INGEST_SOURCE_DIR
+                      value: /data/rag-source
+                    # DSN compatible with RETRIEVAL_API_DATABASE_URL: both point
+                    # at postgres-pgvector.data-plane.svc.cluster.local:5432/nemoclaw_rag.
+                    - name: POSTGRES_DSN
+                      valueFrom:
+                        secretKeyRef:
+                          name: ingestion-secrets
+                          key: postgres-dsn
+                    - name: EMBEDDING_ENDPOINT
+                      value: http://nemo-embedder.inference.svc.cluster.local:8000
+                    # nemo-parse is not part of this bundle's 30-nim-rag-services
+                    # set; deploy the parse NIMService from the incubator
+                    # nim-services manifest, or repoint PARSE_ENDPOINT.
+                    - name: PARSE_ENDPOINT
+                      value: http://nemo-parse.inference.svc.cluster.local:8000
+                    - name: DEFAULT_COLLECTION
+                      value: enterprise-public
+                    - name: DEFAULT_CLASSIFICATION
+                      value: internal-sanitized
+                  volumeMounts:
+                    - name: rag-source
+                      mountPath: /data/rag-source
+                      readOnly: true
+              volumes:
+                - name: rag-source
+                  persistentVolumeClaim:
+                    claimName: rag-documents
+                    readOnly: true

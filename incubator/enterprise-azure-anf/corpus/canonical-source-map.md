@@ -35,4 +35,4 @@ Use the first three for target-state architecture. Use the DOCX draft to correct
 
 ## Promotion Rule
 
-No raw corpus file is promoted into `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/docs` directly. Promotion must pass through incubator specs, ADRs, and contributor review first.
+No raw corpus file is promoted into `docs` directly. Promotion must pass through incubator specs, ADRs, and contributor review first.

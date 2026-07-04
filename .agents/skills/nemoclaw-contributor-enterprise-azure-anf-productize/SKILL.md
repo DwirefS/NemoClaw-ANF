@@ -9,11 +9,11 @@ Start with the promotion and repo-governance docs.
 
 ## Read Order
 
-1. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/11-risks-gaps-and-promotion-criteria.md`
-2. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/12-repo-strategy-and-upstream-sync.md`
-3. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/runbooks/overlay-adoption-plan.md`
-4. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/runbooks/upstream-sync-and-overlay-release.md`
-5. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/runbooks/upstream-diff-register.md`
+1. `incubator/enterprise-azure-anf/specs/11-risks-gaps-and-promotion-criteria.md`
+2. `incubator/enterprise-azure-anf/specs/12-repo-strategy-and-upstream-sync.md`
+3. `incubator/enterprise-azure-anf/runbooks/overlay-adoption-plan.md`
+4. `incubator/enterprise-azure-anf/runbooks/upstream-sync-and-overlay-release.md`
+5. `incubator/enterprise-azure-anf/runbooks/upstream-diff-register.md`
 
 ## Use This Skill When
 

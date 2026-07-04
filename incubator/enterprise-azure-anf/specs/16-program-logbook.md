@@ -236,6 +236,23 @@ Why it mattered:
 - the repo now has a concrete preflight for the live PostgreSQL path instead of relying only on bootstrap and assumptions
 - the remaining gap is no longer “how do we verify the database contract,” but “run this harness against a real deployment”
 
+### 2026-06-12 — Project review, spec reconstruction, and first live end-to-end validation
+
+Completed:
+
+- reviewed the full repository with fresh eyes and recorded the findings in `incubator/enterprise-azure-anf/plans/2026-06-12-project-review-and-enhancement-plan.md`
+- discovered that specs 00-14 and 18 were never committed because a generic `specs/` rule in the root `.gitignore` silently swallowed them; scoped the rule with a negation and reconstructed all sixteen files from in-repo sources with explicit provenance notes
+- replaced the author-machine absolute paths (`/Users/dwirefs/...`) across incubator docs and contributor skills with repo-relative paths; annotated the corpus manifest paths as historical provenance
+- ran the retrieval bootstrap, verification harness, and a new end-to-end stack validation against a real PostgreSQL 16 deployment with pgvector 0.8.2 for the first time
+- fixed the four live-path defects this exposed (recorded below) and landed ACL-aware retrieval filtering, migration ledger tracking, duplicate-ingestion protection, and a CI e2e workflow
+- brought the retrieval service under the root Biome lint and format scope
+
+Why it mattered:
+
+- the retrieval path moved from "implemented but never executed" to "proven end to end against a live database, locally and in CI"
+- the highest-risk blocked item (ACL-aware retrieval) now has a working metadata model and enforcement path
+- the program's written record (specs, skills, corpus) is portable and complete for the first time
+
 ## Conflict And Resolution Record
 
 Conflict and resolution record for this program:
@@ -301,3 +318,128 @@ Resolution:
 
 - performed the `RETRIEVAL_API_DATABASE_URL` check before loading `pg`
 - deferred the `pg` import until after the DSN contract is present so the failure mode stays truthful and operator-friendly
+
+### Committed spec set versus gitignore scratch rule
+
+Conflict:
+
+- the incubator README, skills, and tests all referenced a nineteen-file spec set, but only specs 15-17 existed in the repository
+- the root `.gitignore` contains a generic `specs/` scratch rule that silently excluded the incubator spec directory, so the original files were lost on the author's machine
+
+Resolution:
+
+- added a scoped negation (`!incubator/enterprise-azure-anf/specs/`) so the incubator specs are repo-owned
+- reconstructed specs 00-14 and 18 from the corpus derivatives, ADRs, profiles, manifests, runbooks, diagrams, site content, and control surfaces, each with an explicit provenance section
+
+### Declared embedding dimension versus default model and index limits
+
+Conflict:
+
+- the schema declared `embedding vector(3072)` while the default embedding model (`nvidia/nv-embedqa-e5-v5`) emits 1024 dimensions
+- pgvector rejects HNSW indexes on `vector` columns above 2000 dimensions, so the migration failed against a real database (`hnswbuild.c` InitBuildState error captured live)
+
+Resolution:
+
+- changed the column to `vector(1024)` to match the default model and documented the model-dimension coupling and the `halfvec` strategy required for larger models
+
+### Documented entrypoints versus strip-types module resolution
+
+Conflict:
+
+- `npm start` and `npm run bootstrap` run TypeScript through `node --experimental-strip-types`, which requires explicit `.ts` extensions on relative imports
+- every relative import in the package was extensionless, so the documented entrypoints had never been runnable; only bundler-based tests passed
+
+Resolution:
+
+- added explicit `.ts` extensions to all relative imports and validated both entrypoints against the live database
+
+### Parameter encoding versus pgvector literal form
+
+Conflict:
+
+- the TypeScript backend passed the query embedding as a JavaScript array and the Python writer passed a list, which node-postgres and psycopg encode as PostgreSQL array literals (`{...}`); the `vector` type requires the `[...]` literal form
+
+Resolution:
+
+- introduced `toVectorLiteral` with a `$1::vector` cast in the query plan, and JSON-encoded embeddings with a `%s::vector` cast in the ingestion writer
+
+### Verification harness index names versus migration index names
+
+Conflict:
+
+- `verify-live-postgres.mjs` checked for `document_chunks_embedding_idx` and `document_chunks_fts_idx`, but the migration creates `document_chunks_embedding_hnsw_idx` and `document_chunks_tsv_gin_idx`, so the harness could never pass
+
+Resolution:
+
+- aligned the harness to the real index names and added the new ACL index to the expected set
+
+### 2026-06-12 — NemoMaxxing deployable stack, console, and agent skills
+
+Completed:
+
+- built the NemoMaxxing console (`enterprise/services/console/`): grounded chat through the retrieval boundary, retrieval inspector exposing policy and ACL decisions, dependency-free server, unit tests, and a live e2e validated against the real PostgreSQL plus pgvector stack
+- created the deployable infrastructure tree (`enterprise/deploy/`): Bicep for VNet, ANF account/pools/volumes, AKS GPU cluster, and Key Vault; numbered Kubernetes manifests for the data plane, RAG NIMs, Nemotron and multi-engine Gemma inference, nv-ingest, retrieval API, console, and worker tier; staged deploy and validation scripts
+- authored four `nemomaxxing-*` agent skills so an agent given this repository can deploy and operate the platform end to end, and added them to the skills guide
+- extended the CI e2e workflow to validate the console against the pgvector service container
+- recorded the wave plan in `incubator/enterprise-azure-anf/plans/2026-06-12-nemomaxxing-deployable-stack.md`
+
+Why it mattered:
+
+- the overlay now has a human-facing surface that makes role and ACL enforcement visible instead of implied
+- the path from "validated locally" to "running on Azure" is now encoded as reviewable infrastructure code and agent-executable skills rather than tribal knowledge
+- the honest boundary is explicit: cloud assets are `assumed` until the first real subscription deployment, which must be logged as the next validation event
+
+### 2026-07-03 — Secure gateway, MCP bridge, and production hardening
+
+Completed:
+
+- built the secure gateway (`enterprise/services/gateway/`) realizing the whitepaper's policy-enforcement seam: bearer authentication (static tokens plus RS256 JWT against a JWKS endpoint for Entra ID-style identity), identity-derived principals (body-supplied principals are discarded, closing the trust gap that had been the top blocked security item), redaction and masking of sanitized-only responses, JSONL audit trail carrying query hashes instead of raw queries, per-subject rate limiting, and Prometheus metrics
+- built the MCP-to-ANF bridge (`enterprise/services/mcp-bridge/`) realizing the whitepaper's "Universal Translator": a dependency-free stdio MCP server exposing `retrieval_search` and `retrieval_health` tools over the gateway, with principals deliberately excluded from tool arguments
+- hardened the retrieval API for production: liveness (`/healthz`) split from readiness (`/readyz` with backend probe), request body caps, and graceful SIGTERM draining across all services
+- wired the console through the gateway (`CONSOLE_RETRIEVAL_TOKEN`), added the gateway deployment manifest with a NetworkPolicy that makes the retrieval API reachable only from the gateway, gateway secret creation in the cluster bootstrap script, and the stage-55 apply step
+- validated everything live against real PostgreSQL plus pgvector: nine gateway e2e checks (401/403 paths, identity-derived ACL unlock with no principals in the body, anti-escalation, redaction of emails and phone numbers, rate limiting, audit integrity, metrics) and five MCP bridge e2e checks; CI now runs retrieval, console, gateway, and bridge e2e suites against the pgvector service container
+
+Why it mattered:
+
+- the two largest promised-but-missing architecture links from the whitepaper (secure gateway, MCP bridge) now exist as tested code instead of diagrams
+- ACL enforcement became authenticated enforcement: who may assert which principals is now decided by verified identity, not by the caller
+- the platform's human surface (console), agent surface (MCP), and service surface (HTTP) all pass through one audited, redacting, rate-limited boundary
+
+### 2026-07-03 — Fable review report and technology foresight
+
+Completed:
+
+- authored the comprehensive review-and-handover document at `incubator/enterprise-azure-anf/reviews/2026-07-03-fable-review-report-and-enhancements.md`: project philosophy, repository map, review findings, the three build waves with what/why/how/where, architecture inputs and invariants, a July-2026 trend-grounded feature roadmap, a prioritized resume-work plan, and the validation evidence ledger
+- refreshed the technology research underpinning the roadmap: NVIDIA Dynamo/NIXL KV-cache offload to networked storage and NetApp's AI Data Engine (the ANF-as-inference-memory opportunity), the MCP 2026-07-28 authorization spec (OAuth 2.1 resource servers), A2A 1.0 under the Linux Foundation, agent-memory vendor landscape versus ANF snapshot-as-memory, EU AI Act enforcement timeline, Azure confidential H100 GA, and the benchmark-gated case for keeping pgvector over GPU ANN (ADR-003 upheld)
+
+Why it mattered:
+
+- the project owner is resuming development after a pause; this report is the single re-entry point that connects the whitepaper's philosophy, the current validated state, and the next quarter of work in dependency order
+
+### 2026-07-04 — Attribution, retrieval evaluation, and ACL capture (partial wave)
+
+Completed:
+
+- console answers now carry citations mapping the model's numbered markers to supporting passage ids, highlighted in the retrieval inspector
+- added the retrieval quality harness (`npm run eval:retrieval`): labeled corpus, recall@5 and MRR gates; first live run scored recall@5 1.00 and MRR 0.95
+- added automatic ACL capture from filesystem permissions in the ingestion worker (POSIX mode-bit mapping plus an NFSv4 ACL parser), closing the automatic half of permission capture during ingestion
+
+Interrupted by session limits and deferred to the next pass:
+
+- agent memory tier (migration 003, /v1/memory endpoints, gateway passthrough)
+- vitest guard for the ACL capture module
+- KV-cache-on-ANF deployment assets (manifest and Bicep volume)
+- gateway well-known endpoints (OAuth protected-resource metadata, A2A agent card) and HNSW iterative-scan tuning
+
+### 2026-07-04 — Memory tier, standards endpoints, and KV-cache contract (wave completion)
+
+Completed:
+
+- landed the identity-scoped agent memory tier: migration `003_agent_memory.sql` (semantic rows with embeddings, episodic rows without, recency/GIN/partial-HNSW indexes), the memory store with content-addressed upserts and hybrid RRF recall, `/v1/memory` and `/v1/memory/recall` endpoints, and a gateway passthrough that overwrites `agentId` with the verified subject; two new gateway e2e checks prove writes land under the verified identity and cannot be recalled across identities (11/11 live checks green)
+- added the gateway's standards discovery documents: RFC 9728 protected-resource metadata (the MCP 2026 OAuth 2.1 resource-server model) and an A2A-style agent card advertising the retrieval capability and auth scheme
+- added the vitest guard for the filesystem ACL-capture module and the forward-looking KV-cache storage contract (`k8s/34-dynamo-kv-cache.yaml` plus a `kv-cache` Ultra volume in the Bicep module), honestly marked `assumed` pending a GPU-cluster TTFT benchmark
+
+Why it mattered:
+
+- the last unimplemented pillar of the whitepaper's architecture (composable memory tiers) now exists as validated code, completing semantic + episodic + state (ANF snapshots) composition
+- the platform's discovery surfaces now match where MCP authorization and A2A interop are heading, and the ANF-as-inference-memory opportunity has a concrete provisioning contract to benchmark against

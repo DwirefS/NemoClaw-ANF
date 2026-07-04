@@ -9,11 +9,11 @@ Start here before continuing implementation work on the overlay.
 
 ## Read Order
 
-1. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/15-engineering-tracker.md`
-2. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/16-program-logbook.md`
-3. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/17-delivery-backlog-and-dependencies.md`
-4. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/18-change-control-and-execution-rules.md`
-5. `/Users/dwirefs/Documents/VibeProjects/NemoClaw-ANF/incubator/enterprise-azure-anf/specs/12-repo-strategy-and-upstream-sync.md`
+1. `incubator/enterprise-azure-anf/specs/15-engineering-tracker.md`
+2. `incubator/enterprise-azure-anf/specs/16-program-logbook.md`
+3. `incubator/enterprise-azure-anf/specs/17-delivery-backlog-and-dependencies.md`
+4. `incubator/enterprise-azure-anf/specs/18-change-control-and-execution-rules.md`
+5. `incubator/enterprise-azure-anf/specs/12-repo-strategy-and-upstream-sync.md`
 
 ## Use This Skill When
 
