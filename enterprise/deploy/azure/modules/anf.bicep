@@ -35,12 +35,16 @@ param premiumPoolSizeTiB int = 8
 @minValue(1)
 param standardPoolSizeTiB int = 4
 
+// Size of the forward-looking KV-cache volume on the ultra pool (GiB).
+param kvCacheSizeGib int = 4096
+
 // NFS protocol for all platform volumes. NFSv4.1 is the platform default;
 // NFSv3 is acceptable for the read-mostly models-cache if v4.1 locking
 // overhead shows up in benchmarks (spec 10).
 var nfsProtocol = 'NFSv4.1'
 
 var tib = 1099511627776
+var gib = 1073741824
 
 var defaultExportPolicy = {
   rules: [
@@ -181,6 +185,26 @@ resource agentWorkspaceVolume 'Microsoft.NetApp/netAppAccounts/capacityPools/vol
   }
 }
 
+// Forward-looking KV-cache tier (status: assumed). Dynamo/NIXL and the ICMSP
+// reference standardize KV-cache offload to networked storage, and NetApp's
+// AI Data Engine aligns the ONTAP family with that pattern. Provisioned on
+// the ultra pool so a Dynamo-served NIM can be benchmarked against it; not
+// validated until that GPU-cluster run happens.
+resource kvCacheVolume 'Microsoft.NetApp/netAppAccounts/capacityPools/volumes@2024-03-01' = {
+  parent: ultraPool
+  name: 'kv-cache'
+  location: location
+  properties: {
+    creationToken: '${prefix}-kv-cache'
+    usageThreshold: kvCacheSizeGib * gib
+    protocolTypes: [
+      nfsProtocol
+    ]
+    subnetId: anfDelegatedSubnetId
+    exportPolicy: defaultExportPolicy
+  }
+}
+
 // --- Outputs -----------------------------------------------------------------
 
 output netAppAccountId string = netAppAccount.id
@@ -194,6 +218,7 @@ output pgWalVolumeId string = pgWalVolume.id
 output pgDataVolumeId string = pgDataVolume.id
 output ragDocumentsVolumeId string = ragDocumentsVolume.id
 output agentWorkspaceVolumeId string = agentWorkspaceVolume.id
+output kvCacheVolumeId string = kvCacheVolume.id
 
 // Mount target IPs for static PV definitions and NFS clients.
 output modelsCacheMountIp string = modelsCacheVolume.properties.mountTargets[0].ipAddress
@@ -201,3 +226,4 @@ output pgWalMountIp string = pgWalVolume.properties.mountTargets[0].ipAddress
 output pgDataMountIp string = pgDataVolume.properties.mountTargets[0].ipAddress
 output ragDocumentsMountIp string = ragDocumentsVolume.properties.mountTargets[0].ipAddress
 output agentWorkspaceMountIp string = agentWorkspaceVolume.properties.mountTargets[0].ipAddress
+output kvCacheMountIp string = kvCacheVolume.properties.mountTargets[0].ipAddress

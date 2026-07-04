@@ -80,3 +80,7 @@ Run the scripts in order. Each stage has a gate; do not continue past a failed g
 
 Structural integrity (files exist, YAML parses, env contracts present, scripts are
 executable) is enforced by `test/enterprise-deploy-assets.test.ts`.
+
+## Forward-Looking: KV-Cache Tier
+
+Status: `assumed`. NVIDIA Dynamo's KV-cache-aware disaggregated serving, the NIXL transfer layer, and the ICMSP reference architecture standardize KV-cache offload onto networked storage, and NetApp's AI Data Engine aligns the ONTAP family with that pattern. The deploy tree therefore provisions a `kv-cache` ANF Ultra volume (`k8s/34-dynamo-kv-cache.yaml`, `azure/modules/anf.bicep`) as the storage contract for a future Dynamo-served NIM profile, so long agent sessions and repeatedly grounded enterprise documents can stop re-prefilling. Nothing in this tier is validated until a GPU-cluster benchmark run measures time-to-first-token against the shared volume.

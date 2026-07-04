@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Forward-looking KV-cache tier for disaggregated inference — status: assumed.
+#
+# NVIDIA Dynamo (GA since GTC 2025) disaggregates prefill/decode and routes
+# requests with KV-cache-aware scheduling; NIXL is the transfer layer, and
+# the ICMSP reference architecture standardizes KV-cache offload onto
+# networked storage. NetApp's AI Data Engine aligns the ONTAP family with
+# that pattern, which makes an ANF Ultra volume a plausible context-memory
+# tier for the NIM-served models in this stack: long agent sessions and
+# repeatedly-grounded enterprise documents stop re-prefilling.
+#
+# This asset intentionally ships only the storage contract (the PVC and the
+# integration notes). The Dynamo serving deployment itself is upstream's
+# operator/helm story and must be layered on a GPU cluster; nothing here is
+# validated until that benchmark run happens (see the engineering tracker).
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: kv-cache
+      namespace: inference
+      labels:
+        app.kubernetes.io/part-of: nemomaxxing
+        nemomaxxing/status: assumed
+    spec:
+      accessModes:
+        - ReadWriteMany
+      storageClassName: anf-ultra-rwx
+      resources:
+        requests:
+          storage: 4Ti
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: dynamo-kv-cache-notes
+      namespace: inference
+    data:
+      mount-point: /kv-cache
+      contract: |
+        Tiering order: GPU HBM -> CPU DRAM -> local NVMe -> this ANF volume.
+        The volume is ReadWriteMany so every decode worker can reuse prefill
+        context produced by any other worker. Expect network, not storage,
+        to be the first bottleneck; benchmark TTFT with and without the
+        shared tier before enabling it for production traffic.
+      status: |
+        assumed - provisioned contract only. Validation event: a Dynamo-served
+        NIM on the GPU pool with NIXL offload pointed at /kv-cache, measuring
+        time-to-first-token on repeated enterprise contexts.

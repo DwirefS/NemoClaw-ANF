@@ -182,6 +182,20 @@ describe("enterprise deploy assets (NemoMaxxing)", () => {
     expect(deployScript).toContain("55-gateway.yaml");
   });
 
+  it("provisions the forward-looking KV-cache tier", () => {
+    const docs = parseManifestResources("k8s/34-dynamo-kv-cache.yaml");
+    const manifest = read("k8s/34-dynamo-kv-cache.yaml");
+    expect(docs.length).toBeGreaterThan(0);
+    expect(manifest).toContain("anf-ultra-rwx");
+    expect(manifest).toContain("ReadWriteMany");
+    expect(manifest).toContain("/kv-cache");
+    expect(manifest).toContain("assumed");
+
+    const bicep = read("azure/modules/anf.bicep");
+    expect(bicep).toContain("kv-cache");
+    expect(bicep).toContain("kvCacheSizeGib");
+  });
+
   it("includes the Bicep tree with the key Azure resource types", () => {
     for (const relativePath of requiredBicepFiles) {
       expect(exists(relativePath)).toBe(true);
