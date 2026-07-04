@@ -228,6 +228,54 @@ export function createGatewayServer(options: CreateGatewayServerOptions): Gatewa
         return;
       }
 
+      // RFC 9728 protected-resource metadata: the MCP 2026 authorization
+      // model treats gateways like this one as OAuth 2.1 resource servers,
+      // and clients discover the authorization server through this document.
+      if (request.method === "GET" && request.url === "/.well-known/oauth-protected-resource") {
+        sendJson(response, 200, {
+          resource: config.publicUrl,
+          authorization_servers: config.jwtIssuer ? [config.jwtIssuer] : [],
+          bearer_methods_supported: ["header"],
+          resource_name: config.serviceName,
+        });
+        return;
+      }
+
+      // A2A-style agent card: advertises the vault/field retrieval capability
+      // so agent-to-agent clients can discover this boundary and its auth
+      // scheme instead of being hand-wired.
+      if (request.method === "GET" && request.url === "/.well-known/agent-card.json") {
+        sendJson(response, 200, {
+          name: config.serviceName,
+          description:
+            "NemoMaxxing enterprise retrieval boundary: role-aware, ACL-enforced, audited access to enterprise knowledge on Azure NetApp Files.",
+          url: config.publicUrl,
+          version: "0.1.0",
+          provider: { organization: "NemoMaxxing" },
+          capabilities: {},
+          securitySchemes: {
+            bearer: {
+              type: "http",
+              scheme: "bearer",
+              description:
+                config.authMode === "jwt"
+                  ? "RS256 JWT from the configured issuer; roles and groups claims map to agent roles and principals."
+                  : "Static bearer token provisioned by the platform operator.",
+            },
+          },
+          skills: [
+            {
+              id: "retrieval_search",
+              name: "Enterprise retrieval search",
+              description:
+                "Hybrid vector and full-text search over the enterprise corpus with role policy and document ACL enforcement.",
+              tags: ["retrieval", "rag", "enterprise"],
+            },
+          ],
+        });
+        return;
+      }
+
       if (request.method === "GET" && request.url === "/metrics") {
         response.statusCode = 200;
         response.setHeader("content-type", "text/plain; version=0.0.4");

@@ -175,6 +175,45 @@ describe("enterprise secure gateway", () => {
     expect(text).toContain("gateway_request_duration_ms_count 1");
   });
 
+  it("serves RFC 9728 metadata and an A2A agent card", async () => {
+    const { createGatewayServer } = await import("../enterprise/services/gateway/src/server");
+    const { createAuditWriter } = await import("../enterprise/services/gateway/src/audit");
+    const config = loadGatewayConfig({
+      GATEWAY_PORT: "0",
+      GATEWAY_HOST: "127.0.0.1",
+      GATEWAY_AUTH_MODE: "jwt",
+      GATEWAY_JWT_ISSUER: "https://login.example.test/tenant",
+      GATEWAY_JWKS_URL: "https://login.example.test/keys",
+      GATEWAY_PUBLIC_URL: "https://gw.example.test",
+    });
+    const server = createGatewayServer({
+      config,
+      identityResolver: { resolve: async () => null },
+      auditWriter: createAuditWriter(""),
+      metrics: createMetrics(),
+      rateLimiter: createRateLimiter(0),
+    });
+    await server.listen();
+    const address = server.address();
+    const port = typeof address === "object" && address ? address.port : 0;
+
+    try {
+      const metadata = (await (
+        await fetch(`http://127.0.0.1:${port}/.well-known/oauth-protected-resource`)
+      ).json()) as { resource: string; authorization_servers: string[] };
+      expect(metadata.resource).toBe("https://gw.example.test");
+      expect(metadata.authorization_servers).toEqual(["https://login.example.test/tenant"]);
+
+      const card = (await (
+        await fetch(`http://127.0.0.1:${port}/.well-known/agent-card.json`)
+      ).json()) as { name: string; skills: Array<{ id: string }> };
+      expect(card.name).toBe("retrieval-gateway");
+      expect(card.skills.map((skill) => skill.id)).toContain("retrieval_search");
+    } finally {
+      await server.close();
+    }
+  });
+
   it("keeps the vi mock typing pattern for future request-level tests", () => {
     const fetchImpl = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => {
       return new Response("{}", { status: 200 });

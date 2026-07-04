@@ -7,6 +7,8 @@ export interface GatewayConfig {
   host: string;
   port: number;
   serviceName: string;
+  /** Externally visible base URL, used in RFC 9728 metadata and the agent card. */
+  publicUrl: string;
   retrievalApiUrl: string;
   authMode: GatewayAuthMode;
   /**
@@ -36,6 +38,8 @@ export function loadGatewayConfig(env: NodeJS.ProcessEnv = process.env): Gateway
     host: env.GATEWAY_HOST || "0.0.0.0",
     port: Number.isFinite(rawPort) ? rawPort : 8095,
     serviceName: env.GATEWAY_SERVICE_NAME || "retrieval-gateway",
+    publicUrl:
+      env.GATEWAY_PUBLIC_URL || "http://retrieval-gateway.data-plane.svc.cluster.local:8095",
     retrievalApiUrl:
       env.RETRIEVAL_API_URL || "http://retrieval-api.data-plane.svc.cluster.local:8080",
     authMode: env.GATEWAY_AUTH_MODE === "jwt" ? "jwt" : "static",
