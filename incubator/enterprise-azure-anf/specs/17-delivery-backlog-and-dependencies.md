@@ -41,7 +41,7 @@ This backlog tracks what remains, what depends on what, and what should be worke
 | identity mapping for asserted principals | `done` | secure gateway | the gateway now derives principals from authenticated identity (static tokens or RS256 JWT with groups claim); callers can no longer assert principals; live Entra ID tenant validation tracked below |
 | permission capture during ingestion | `in-progress` | ACL-aware retrieval design | the writer persists `acl_principals` supplied in chunk metadata; automatic capture from ANF share ACLs is still open |
 | Azure-native secret path alignment | `blocked` | worker tier bootstrap decision, AKS secret model | current design is partial |
-| agent memory and restore validation on ANF | `later` | worker tier runtime hardening | not yet exercised against real runtime state |
+| agent memory and restore validation on ANF | `in-progress` | worker tier runtime hardening | semantic and episodic tiers landed 2026-07-04 with identity-scoped endpoints and live e2e; ANF snapshot restore of workspace state remains the open third tier |
 | full AKS-hosted NemoClaw/OpenShell experiment | `blocked` | upstream maturity, deployment strategy | not part of supported baseline |
 
 ## Dependency Notes

@@ -430,3 +430,16 @@ Interrupted by session limits and deferred to the next pass:
 - vitest guard for the ACL capture module
 - KV-cache-on-ANF deployment assets (manifest and Bicep volume)
 - gateway well-known endpoints (OAuth protected-resource metadata, A2A agent card) and HNSW iterative-scan tuning
+
+### 2026-07-04 — Memory tier, standards endpoints, and KV-cache contract (wave completion)
+
+Completed:
+
+- landed the identity-scoped agent memory tier: migration `003_agent_memory.sql` (semantic rows with embeddings, episodic rows without, recency/GIN/partial-HNSW indexes), the memory store with content-addressed upserts and hybrid RRF recall, `/v1/memory` and `/v1/memory/recall` endpoints, and a gateway passthrough that overwrites `agentId` with the verified subject; two new gateway e2e checks prove writes land under the verified identity and cannot be recalled across identities (11/11 live checks green)
+- added the gateway's standards discovery documents: RFC 9728 protected-resource metadata (the MCP 2026 OAuth 2.1 resource-server model) and an A2A-style agent card advertising the retrieval capability and auth scheme
+- added the vitest guard for the filesystem ACL-capture module and the forward-looking KV-cache storage contract (`k8s/34-dynamo-kv-cache.yaml` plus a `kv-cache` Ultra volume in the Bicep module), honestly marked `assumed` pending a GPU-cluster TTFT benchmark
+
+Why it mattered:
+
+- the last unimplemented pillar of the whitepaper's architecture (composable memory tiers) now exists as validated code, completing semantic + episodic + state (ANF snapshots) composition
+- the platform's discovery surfaces now match where MCP authorization and A2A interop are heading, and the ANF-as-inference-memory opportunity has a concrete provisioning contract to benchmark against
