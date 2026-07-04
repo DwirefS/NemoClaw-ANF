@@ -95,3 +95,20 @@ Schema assets:
 - migrations are recorded in a `schema_migrations` ledger so re-running bootstrap only applies pending files
 
 The embedding column is `vector(1024)`, matching the default embedding model (`nvidia/nv-embedqa-e5-v5`). Changing the embedding model requires a coordinated migration: pgvector HNSW indexes reject `vector` columns above 2000 dimensions, so larger models need a `halfvec` index strategy on pgvector 0.7+.
+
+## Agent Memory
+
+Composable memory tiers per the whitepaper vision:
+
+| Tier | Store | Recall |
+|---|---|---|
+| Semantic | `agent_memory` rows with pgvector embeddings | hybrid vector + full-text, RRF-fused |
+| Episodic | `agent_memory` rows without embeddings | full-text rank and recency |
+| State | ANF volume snapshots of the agent workspace | see the disaster-recovery runbook |
+
+Endpoints (pgvector mode only; 404 otherwise):
+
+- `POST /v1/memory` — `{agentId, kind: episodic|semantic, content, metadata?}` → 201 `{id}`; ids are content-addressed so re-remembering upserts
+- `POST /v1/memory/recall` — `{agentId, query?, kind?, limit?}` → agent-scoped results
+
+Memory is strictly identity-scoped: every SQL path filters `agent_id` first, and the secure gateway overwrites `agentId` with the verified subject, so one agent can never read or write another agent's memory. The retrieval API trusts the field only because the NetworkPolicy makes the gateway its sole caller.

@@ -13,6 +13,7 @@ describe("enterprise retrieval migrations", () => {
     expect(listSqlMigrationFiles(path.join(repoRoot, "enterprise/services/retrieval-api/sql"))).toEqual([
       path.join(repoRoot, "enterprise/services/retrieval-api/sql/001_document_chunks.sql"),
       path.join(repoRoot, "enterprise/services/retrieval-api/sql/002_acl_principals.sql"),
+      path.join(repoRoot, "enterprise/services/retrieval-api/sql/003_agent_memory.sql"),
     ]);
   });
 

@@ -49,3 +49,5 @@ Proves against the live stack: 401 on missing/unknown tokens, 403 on ungranted r
 - Run in `jwt` mode with your Entra ID tenant: set issuer, audience, and the tenant JWKS URL; grant `vault-agent` through the roles claim in app role assignments.
 - Downstream network policy should make the retrieval API reachable only from the gateway; the deployment manifests wire this.
 - Static-token mode remains appropriate for machine identities on the worker tier until federated workload identity is wired end to end.
+
+Memory passthrough: `POST /v1/memory` and `POST /v1/memory/recall` run the same auth pipeline as `/v1/query`, but `agentId` is always the verified identity subject (the caller's value is discarded — the same trust seam as principals). Discovery documents: `GET /.well-known/oauth-protected-resource` (RFC 9728) and `GET /.well-known/agent-card.json` (A2A-style capability card).

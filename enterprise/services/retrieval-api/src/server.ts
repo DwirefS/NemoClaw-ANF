@@ -11,6 +11,7 @@ import type {
   RetrievalRequestBody,
   RetrievalResponseBody,
 } from "./contracts.ts";
+import type { MemoryKind, MemoryStore } from "./memory.ts";
 import { resolveRetrievalPolicy } from "./policy.ts";
 
 export interface RetrievalApiServer {
@@ -22,6 +23,73 @@ export interface RetrievalApiServer {
 interface CreateServerOptions {
   backend: RetrievalBackend;
   config: RetrievalApiConfig;
+  /** Present only in pgvector mode; memory routes 404 without it. */
+  memoryStore?: MemoryStore;
+}
+
+interface MemoryWriteBody {
+  agentId: string;
+  kind: MemoryKind;
+  content: string;
+  metadata?: Record<string, unknown>;
+}
+
+interface MemoryRecallBody {
+  agentId: string;
+  query?: string;
+  kind?: MemoryKind;
+  limit?: number;
+}
+
+function isMemoryKind(value: unknown): value is MemoryKind {
+  return value === "episodic" || value === "semantic";
+}
+
+function parseMemoryWriteBody(rawBody: string): MemoryWriteBody | null {
+  try {
+    const body = JSON.parse(rawBody) as Partial<MemoryWriteBody>;
+    if (
+      typeof body.agentId !== "string" ||
+      body.agentId.trim() === "" ||
+      typeof body.content !== "string" ||
+      body.content.trim() === "" ||
+      !isMemoryKind(body.kind)
+    ) {
+      return null;
+    }
+    return {
+      agentId: body.agentId,
+      kind: body.kind,
+      content: body.content,
+      metadata:
+        body.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
+          ? body.metadata
+          : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function parseMemoryRecallBody(rawBody: string): MemoryRecallBody | null {
+  try {
+    const body = JSON.parse(rawBody) as Partial<MemoryRecallBody>;
+    if (typeof body.agentId !== "string" || body.agentId.trim() === "") {
+      return null;
+    }
+    if (body.kind !== undefined && !isMemoryKind(body.kind)) {
+      return null;
+    }
+    if (body.query !== undefined && typeof body.query !== "string") {
+      return null;
+    }
+    if (body.limit !== undefined && (!Number.isInteger(body.limit) || body.limit < 1)) {
+      return null;
+    }
+    return { agentId: body.agentId, query: body.query, kind: body.kind, limit: body.limit };
+  } catch {
+    return null;
+  }
 }
 
 function sendJson(response: http.ServerResponse, statusCode: number, payload: object): void {
@@ -111,6 +179,52 @@ export function createRetrievalApiServer(options: CreateServerOptions): Retrieva
           message: error instanceof Error ? error.message : String(error),
         });
       }
+      return;
+    }
+
+    if (request.method === "POST" && request.url === "/v1/memory") {
+      if (!options.memoryStore) {
+        sendJson(response, 404, { error: "not_found" });
+        return;
+      }
+      const rawBody = await readBody(request);
+      if (rawBody === null) {
+        sendJson(response, 413, { error: "invalid_request", message: "Request body too large." });
+        return;
+      }
+      const body = parseMemoryWriteBody(rawBody);
+      if (!body) {
+        sendJson(response, 400, {
+          error: "invalid_request",
+          message: "agentId, kind (episodic|semantic), and content are required.",
+        });
+        return;
+      }
+      const { id } = await options.memoryStore.remember(body);
+      sendJson(response, 201, { id, agentId: body.agentId, kind: body.kind });
+      return;
+    }
+
+    if (request.method === "POST" && request.url === "/v1/memory/recall") {
+      if (!options.memoryStore) {
+        sendJson(response, 404, { error: "not_found" });
+        return;
+      }
+      const rawBody = await readBody(request);
+      if (rawBody === null) {
+        sendJson(response, 413, { error: "invalid_request", message: "Request body too large." });
+        return;
+      }
+      const body = parseMemoryRecallBody(rawBody);
+      if (!body) {
+        sendJson(response, 400, {
+          error: "invalid_request",
+          message: "agentId is required; kind and limit must be valid when present.",
+        });
+        return;
+      }
+      const results = await options.memoryStore.recall(body);
+      sendJson(response, 200, { agentId: body.agentId, results });
       return;
     }
 

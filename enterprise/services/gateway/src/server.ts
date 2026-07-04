@@ -208,6 +208,99 @@ export function createGatewayServer(options: CreateGatewayServerOptions): Gatewa
     sendJson(response, upstream.status, { ...payload, requestId });
   }
 
+  async function handleMemory(
+    request: http.IncomingMessage,
+    response: http.ServerResponse,
+    route: string,
+  ): Promise<void> {
+    const startedAt = Date.now();
+    const requestId = randomUUID();
+    response.setHeader("x-request-id", requestId);
+
+    const authorization = request.headers.authorization ?? "";
+    const bearer = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+
+    function deny(status: number, reason: string, subject = "anonymous"): void {
+      metrics.recordDenied(reason);
+      metrics.recordRequest("memory", status, Date.now() - startedAt);
+      auditWriter.write({
+        ts: new Date().toISOString(),
+        requestId,
+        subject,
+        role: "memory",
+        principals: [],
+        queryHash: "",
+        decision: "deny",
+        reason,
+        status,
+        latencyMs: Date.now() - startedAt,
+      });
+      sendJson(response, status, { error: reason, requestId });
+    }
+
+    if (bearer === "") {
+      deny(401, "missing_bearer_token");
+      return;
+    }
+    let identity: Awaited<ReturnType<IdentityResolver["resolve"]>>;
+    try {
+      identity = await identityResolver.resolve(bearer);
+    } catch (error) {
+      deny(
+        503,
+        `identity_resolution_failed:${error instanceof Error ? error.message : String(error)}`,
+      );
+      return;
+    }
+    if (!identity) {
+      deny(401, "invalid_token");
+      return;
+    }
+    if (!rateLimiter.allow(identity.subject)) {
+      deny(429, "rate_limited", identity.subject);
+      return;
+    }
+    const rawBody = await readBody(request);
+    if (rawBody === null) {
+      deny(413, "body_too_large", identity.subject);
+      return;
+    }
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(rawBody) as Record<string, unknown>;
+    } catch {
+      deny(400, "invalid_request", identity.subject);
+      return;
+    }
+
+    // Memory is identity-scoped exactly like principals: agentId always
+    // comes from the verified subject, never from the caller's body.
+    parsed.agentId = identity.subject;
+
+    const upstream = await fetchImpl(`${config.retrievalApiUrl.replace(/\/$/, "")}${route}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-request-id": requestId },
+      body: JSON.stringify(parsed),
+    });
+    const payload = (await upstream.json()) as Record<string, unknown>;
+
+    const latencyMs = Date.now() - startedAt;
+    metrics.recordRequest("memory", upstream.status, latencyMs);
+    auditWriter.write({
+      ts: new Date().toISOString(),
+      requestId,
+      subject: identity.subject,
+      role: "memory",
+      principals: identity.principals,
+      queryHash: hashQuery(typeof parsed.content === "string" ? parsed.content : rawBody),
+      decision: upstream.ok ? "allow" : "deny",
+      reason: upstream.ok ? undefined : `upstream_${upstream.status}`,
+      status: upstream.status,
+      latencyMs,
+    });
+    sendJson(response, upstream.status, { ...payload, requestId });
+  }
+
   const server = http.createServer(async (request, response) => {
     try {
       if (request.method === "GET" && request.url === "/healthz") {
@@ -285,6 +378,14 @@ export function createGatewayServer(options: CreateGatewayServerOptions): Gatewa
 
       if (request.method === "POST" && request.url === "/v1/query") {
         await handleQuery(request, response);
+        return;
+      }
+
+      if (
+        request.method === "POST" &&
+        (request.url === "/v1/memory" || request.url === "/v1/memory/recall")
+      ) {
+        await handleMemory(request, response, request.url);
         return;
       }
 

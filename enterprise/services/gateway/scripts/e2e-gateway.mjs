@@ -107,6 +107,13 @@ async function seedDatabase() {
   ];
   try {
     await client.query("DELETE FROM document_chunks WHERE id LIKE 'gw-e2e-%'");
+    try {
+      await client.query(
+        "DELETE FROM agent_memory WHERE agent_id IN ('user:alice', 'svc:field-console')",
+      );
+    } catch {
+      // agent_memory appears after the 003 migration; ignore on older schemas
+    }
     for (const chunk of seedChunks) {
       await client.query(
         `INSERT INTO document_chunks
@@ -292,6 +299,60 @@ try {
         assert(
           !body.results.some((result) => result.id === "gw-e2e-sensitive-bom"),
           "body principals escalated access",
+        );
+      },
+    },
+    {
+      name: "memory writes are identity-scoped",
+      run: async () => {
+        const writeResponse = await fetch(`${gatewayUrl}/v1/memory`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${VAULT_TOKEN}`,
+          },
+          body: JSON.stringify({
+            agentId: "someone-else",
+            kind: "episodic",
+            content: "remember the BOM deadline is Friday",
+          }),
+        });
+        assert(writeResponse.status === 201, `expected 201, got ${writeResponse.status}`);
+
+        const recallResponse = await fetch(`${gatewayUrl}/v1/memory/recall`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${VAULT_TOKEN}`,
+          },
+          body: JSON.stringify({ agentId: "ignored" }),
+        });
+        const recall = await recallResponse.json();
+        assert(recallResponse.status === 200, `expected 200, got ${recallResponse.status}`);
+        assert(
+          recall.results.some(
+            (record) => record.agentId === "user:alice" && record.content.includes("BOM deadline"),
+          ),
+          "memory was not stored under the verified identity",
+        );
+      },
+    },
+    {
+      name: "memory recall cannot cross identities",
+      run: async () => {
+        const response = await fetch(`${gatewayUrl}/v1/memory/recall`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${FIELD_TOKEN}`,
+          },
+          body: JSON.stringify({ agentId: "user:alice" }),
+        });
+        const payload = await response.json();
+        assert(response.status === 200, `expected 200, got ${response.status}`);
+        assert(
+          !payload.results.some((record) => record.content.includes("BOM deadline")),
+          "another identity recalled a foreign memory",
         );
       },
     },
