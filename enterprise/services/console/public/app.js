@@ -58,10 +58,12 @@ function renderInspector(payload) {
   );
 
   resultsBox.replaceChildren();
+  const citedIds = new Set(payload.citations?.ids ?? []);
   for (const result of payload.results ?? []) {
     const node = document.createElement("div");
     const restricted = !["public", "internal-sanitized"].includes(result.classification);
-    node.className = `result${restricted ? " restricted" : ""}`;
+    const cited = citedIds.has(result.id);
+    node.className = `result${restricted ? " restricted" : ""}${cited ? " cited" : ""}`;
 
     const title = document.createElement("div");
     title.className = "title";
@@ -69,13 +71,17 @@ function renderInspector(payload) {
 
     const badges = document.createElement("div");
     badges.className = "badges";
-    for (const label of [
+    const labels = [
       result.collection,
       result.classification,
       `score ${Number(result.score).toFixed(4)}`,
-    ]) {
+    ];
+    if (cited) {
+      labels.unshift("cited in answer");
+    }
+    for (const label of labels) {
       const badge = document.createElement("span");
-      badge.className = "badge";
+      badge.className = `badge${label === "cited in answer" ? " badge-cited" : ""}`;
       badge.textContent = label;
       badges.appendChild(badge);
     }

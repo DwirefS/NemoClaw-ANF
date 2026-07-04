@@ -77,3 +77,29 @@ export function extractAnswer(body: unknown): string {
   }
   return content;
 }
+
+/**
+ * Extracts the passage numbers the model actually cited ([n] markers) and
+ * maps them to result ids, so the UI can distinguish passages that support
+ * the answer from passages that were merely retrieved. Numbers outside the
+ * result range are ignored.
+ */
+export function extractCitedPassages(
+  answer: string,
+  results: RetrievalResult[],
+): { indexes: number[]; ids: string[] } {
+  const indexes = new Set<number>();
+  for (const match of answer.matchAll(/\[(\d{1,3})\]/g)) {
+    const index = Number(match[1]);
+    if (Number.isInteger(index) && index >= 1 && index <= results.length) {
+      indexes.add(index);
+    }
+  }
+  const sorted = [...indexes].sort((left, right) => left - right);
+  return {
+    indexes: sorted,
+    ids: sorted
+      .map((index) => results[index - 1]?.id)
+      .filter((id): id is string => typeof id === "string"),
+  };
+}

@@ -244,3 +244,12 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+.result.cited {
+  border-left-color: var(--green);
+}
+
+.badge-cited {
+  color: var(--green);
+  border-color: var(--green);
+}

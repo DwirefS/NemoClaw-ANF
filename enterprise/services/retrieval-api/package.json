@@ -9,7 +9,8 @@
     "start": "node --experimental-strip-types ./src/index.ts",
     "bootstrap": "node --experimental-strip-types ./src/bootstrap.ts",
     "verify:postgres": "node ./scripts/verify-live-postgres.mjs",
-    "e2e:local": "node ./scripts/e2e-local-stack.mjs"
+    "e2e:local": "node ./scripts/e2e-local-stack.mjs",
+    "eval:retrieval": "node ./scripts/eval-retrieval.mjs"
   },
   "dependencies": {
     "pg": "^8.13.1"

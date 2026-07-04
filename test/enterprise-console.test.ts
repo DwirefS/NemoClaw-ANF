@@ -7,6 +7,7 @@ import {
   buildGroundedChatRequest,
   composeGroundedPrompt,
   extractAnswer,
+  extractCitedPassages,
 } from "../enterprise/services/console/src/grounding";
 import { createConsoleServer } from "../enterprise/services/console/src/server";
 
@@ -70,6 +71,23 @@ describe("nemomaxxing console", () => {
   it("extracts answers and rejects empty chat responses", () => {
     expect(extractAnswer({ choices: [{ message: { content: "hello" } }] })).toBe("hello");
     expect(() => extractAnswer({ choices: [] })).toThrow("did not include an answer");
+  });
+
+  it("maps answer citations to the passages that support them", () => {
+    const citations = extractCitedPassages(
+      "The BOM lists pricing [2]. ANF is low latency [1][2]. Ignore [9].",
+      sampleResults,
+    );
+
+    expect(citations.indexes).toEqual([1, 2]);
+    expect(citations.ids).toEqual(["chunk-1", "chunk-2"]);
+  });
+
+  it("returns no citations when the answer cites nothing in range", () => {
+    const citations = extractCitedPassages("No markers here.", sampleResults);
+
+    expect(citations.indexes).toEqual([]);
+    expect(citations.ids).toEqual([]);
   });
 
   it("orchestrates retrieval and chat through /api/chat", async () => {

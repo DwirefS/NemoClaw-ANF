@@ -7,7 +7,12 @@ import type { AddressInfo } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ConsoleConfig } from "./config.ts";
-import { buildGroundedChatRequest, extractAnswer, type RetrievalResult } from "./grounding.ts";
+import {
+  buildGroundedChatRequest,
+  extractAnswer,
+  extractCitedPassages,
+  type RetrievalResult,
+} from "./grounding.ts";
 
 export interface ConsoleServer {
   listen(): Promise<void>;
@@ -183,12 +188,14 @@ export function createConsoleServer(options: CreateConsoleServerOptions): Consol
           return;
         }
 
+        const answer = extractAnswer(await chat.json());
         sendJson(response, 200, {
-          answer: extractAnswer(await chat.json()),
+          answer,
           model: config.chatModel,
           groundingMode: retrievalPayload.groundingMode,
           policy: retrievalPayload.policy,
           results,
+          citations: extractCitedPassages(answer, results),
         });
         return;
       }
